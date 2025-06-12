@@ -32,6 +32,8 @@ const MapComponent = () => {
   const [directions, setDirections] = useState(null);
   const [distanceKm, setDistanceKm] = useState(null);
   const [search, setSearch] = useState("");
+  const [tracking, setTracking] = useState(false);
+
 
 
   // Fetch user location using Geolocation API
@@ -80,6 +82,44 @@ const MapComponent = () => {
     }
   }, [userLocation, spots]);
 
+  useEffect(() => {
+  let interval;
+  if (tracking) {
+    interval = setInterval(() => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const newLocation = { lat: latitude, lng: longitude };
+          setUserLocation(newLocation);
+
+          // Recalculate route
+          if (selectedSpot) {
+            const directionsService = new window.google.maps.DirectionsService();
+            directionsService.route(
+              {
+                origin: newLocation,
+                destination: { lat: selectedSpot.lat, lng: selectedSpot.lng },
+                travelMode: window.google.maps.TravelMode.WALKING,
+              },
+              (result, status) => {
+                if (status === window.google.maps.DirectionsStatus.OK) {
+                  setDirections(result);
+                } else {
+                  console.error("Error updating route:", status);
+                }
+              }
+            );
+          }
+        },
+        (error) => console.error("Real-time tracking error:", error),
+        { enableHighAccuracy: true }
+      );
+    }, 5000); // every 5 seconds
+  }
+  return () => clearInterval(interval);
+}, [tracking, selectedSpot]);
+
+
   // Directions logic (unchanged)
   const handleClick = (spot) => {
     setSelectedSpot(spot);
@@ -88,7 +128,7 @@ const MapComponent = () => {
       {
         origin: userLocation,
         destination: { lat: spot.lat, lng: spot.lng },
-        travelMode: window.google.maps.TravelMode.WALKING,
+        travelMode: window.google.maps.TravelMode.DRIVING,
       },
       (result, status) => {
         if (status ===  window.google.maps.DirectionsStatus.OK) {
@@ -146,46 +186,7 @@ const MapComponent = () => {
             center={userLocation || { lat: 0, lng: 0 }}
             zoom={15}
            >
-          {directions && <DirectionsRenderer directions={directions} />}
-          {selectedSpot && directions && (
-  <div style={{
-    backgroundColor: "#2c2c2c",
-    padding: "1rem",
-    borderRadius: "10px",
-    marginTop: "1rem",
-    border: "1px solid #444",
-    color: "white",
-  }}>
-    <div style={{ fontWeight: "bold", fontSize: "1.2rem" }}>
-      🚗 Drive to {selectedSpot.place}
-    </div>
-    <div>
-      Distance: {directions.routes[0].legs[0].distance.text} <br />
-      Duration: {directions.routes[0].legs[0].duration.text}
-    </div>
-    <div style={{ marginTop: "0.5rem" }}>
-      <button style={{
-        backgroundColor: "#61dafb",
-        border: "none",
-        padding: "0.5rem 1rem",
-        borderRadius: "6px",
-        cursor: "pointer",
-        fontWeight: "bold",
-        color: "black",
-      }}>
-        Start
-      </button>
-    </div>
-  </div>
-)}
 
-          {directions && (
-          <div style={{ color: "white", padding: "1rem" }}>
-          Distance: {
-          directions.routes[0].legs[0].distance.text
-        } ({directions.routes[0].legs[0].duration.text})
-        </div>
-        )}
 
             {userLocation && <Marker position={userLocation} 
             icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
@@ -204,6 +205,47 @@ const MapComponent = () => {
           </GoogleMap>
         </LoadScript>
       </div>
+          {selectedSpot && directions && (
+  <div style={{
+    backgroundColor: "#2c2c2c",
+    padding: "1rem",
+    borderRadius: "10px",
+    marginTop: "1rem",
+    border: "1px solid #444",
+    color: "white",
+  }}>
+    <div style={{ fontWeight: "bold", fontSize: "1.2rem" }}>
+      🚗 Drive to {selectedSpot.place}
+    </div>
+    <div>
+      Distance: {directions.routes[0].legs[0].distance.text} <br />
+      Duration: {directions.routes[0].legs[0].duration.text}
+    </div>
+    <div style={{ marginTop: "0.5rem" }}>
+      <button 
+      onClick={() => setTracking(!tracking)}
+      style={{
+    backgroundColor: tracking ? "red" : "#61dafb",
+    border: "none",
+    padding: "0.5rem 1rem",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    color: "black",
+  }}>
+        {tracking ? "Stop" : "Start"}
+</button>
+    </div>
+  </div>
+)}
+
+          {directions && (
+          <div style={{ color: "white", padding: "1rem" }}>
+          Distance: {
+          directions.routes[0].legs[0].distance.text
+        } ({directions.routes[0].legs[0].duration.text})
+        </div>
+        )}
 
       {/* Nearby spots list */}
       <div style={{ 
