@@ -1,0 +1,16 @@
+CREATE DATABASE your_database_name;
+
+USE your_database_name;
+
+CREATE TABLE marked_spots (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  lat DOUBLE NOT NULL,
+  lng DOUBLE NOT NULL
+);
+
+INSERT INTO marked_spots (lat, lng)
+VALUES
+(120899138,77.505416),
+(12.902093,77.505537),
+(12.900683,77.503431);
+

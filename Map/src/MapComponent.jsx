@@ -4,6 +4,7 @@ import {
   Marker,
   LoadScript,
   DirectionsRenderer,
+  DirectionsService,
 } from "@react-google-maps/api";
 
 const containerStyle = {
@@ -31,6 +32,7 @@ const MapComponent = () => {
   const [directions, setDirections] = useState(null);
   const [distanceKm, setDistanceKm] = useState(null);
   const [search, setSearch] = useState("");
+
 
   // Fetch user location using Geolocation API
   useEffect(() => {
@@ -89,9 +91,11 @@ const MapComponent = () => {
         travelMode: window.google.maps.TravelMode.WALKING,
       },
       (result, status) => {
-        if (status === "OK") {
+        if (status ===  window.google.maps.DirectionsStatus.OK) {
           setDirections(result);
           setDistanceKm((result.routes[0].legs[0].distance.value / 1000).toFixed(2));
+        }else{
+           console.error(`Error fetching directions: ${status}`);
         }
       }
     );
@@ -141,7 +145,48 @@ const MapComponent = () => {
             mapContainerStyle={{ height: "100%", width: "100%" }}
             center={userLocation || { lat: 0, lng: 0 }}
             zoom={15}
-          >
+           >
+          {directions && <DirectionsRenderer directions={directions} />}
+          {selectedSpot && directions && (
+  <div style={{
+    backgroundColor: "#2c2c2c",
+    padding: "1rem",
+    borderRadius: "10px",
+    marginTop: "1rem",
+    border: "1px solid #444",
+    color: "white",
+  }}>
+    <div style={{ fontWeight: "bold", fontSize: "1.2rem" }}>
+      🚗 Drive to {selectedSpot.place}
+    </div>
+    <div>
+      Distance: {directions.routes[0].legs[0].distance.text} <br />
+      Duration: {directions.routes[0].legs[0].duration.text}
+    </div>
+    <div style={{ marginTop: "0.5rem" }}>
+      <button style={{
+        backgroundColor: "#61dafb",
+        border: "none",
+        padding: "0.5rem 1rem",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontWeight: "bold",
+        color: "black",
+      }}>
+        Start
+      </button>
+    </div>
+  </div>
+)}
+
+          {directions && (
+          <div style={{ color: "white", padding: "1rem" }}>
+          Distance: {
+          directions.routes[0].legs[0].distance.text
+        } ({directions.routes[0].legs[0].duration.text})
+        </div>
+        )}
+
             {userLocation && <Marker position={userLocation} 
             icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
             label="You"
@@ -191,7 +236,7 @@ const MapComponent = () => {
                 fontWeight: "bold",
                 color: "black",
               }}
-              onClick={() => handleClick(spot)}
+              //onClick={() => handleClick(spot)}
             >
               Book Slot
             </button>
