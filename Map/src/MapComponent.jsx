@@ -111,7 +111,6 @@ const MapComponent = () => {
       minHeight: "100vh", 
       boxSizing: "border-box" 
     }}>
-      <h1>Nearby Spots (Within 200km)</h1>
       <input
         type="text"
         placeholder="Search spots..."
