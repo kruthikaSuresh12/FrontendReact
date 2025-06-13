@@ -61,7 +61,7 @@ const MapComponent = () => {
 
   // Fetch spots from API
   useEffect(() => {
-    fetch("http://localhost:5000/api/spots")
+    fetch("http://localhost:5001/api/spots")
       .then((res) => res.json())
       .then((data) => setSpots(data));
   }, []);
@@ -150,10 +150,11 @@ const MapComponent = () => {
     <div style={{ 
       padding: "2rem", 
       fontFamily: "sans-serif", 
-      backgroundColor: "#1e1e1e", 
+      backgroundColor: "from-indigo-100 to-purple-100", 
       color: "white", 
       minHeight: "100vh", 
       boxSizing: "border-box" 
+      
     }}>
       <input
         type="text"

@@ -14,3 +14,42 @@ VALUES
 (12.902093,77.505537),
 (12.900683,77.503431);
 
+-- Use the database
+USE parking;
+
+-- LOGIN table
+CREATE TABLE login (
+    name VARCHAR(100),
+    age INT,
+    emailID VARCHAR(100) PRIMARY KEY,
+    mobNo VARCHAR(15),
+    password VARCHAR(100),
+    confirm_password VARCHAR(100),
+    gender VARCHAR(10)
+);
+
+-- TICKETInfo table
+CREATE TABLE ticket_info (
+    car_number VARCHAR(20) PRIMARY KEY,
+    license VARCHAR(50),
+    spot_name VARCHAR(50),
+    slot_number INT,
+    time_duration_approx VARCHAR(50),
+    driving_person_name VARCHAR(100),
+    customer_phnNo VARCHAR(15),
+    spot_code VARCHAR(20),
+    car_owner_name VARCHAR(100),
+    owner_phnNo VARCHAR(15)
+);
+
+-- Parking Place Side table
+CREATE TABLE parking_place_side (
+    company_name VARCHAR(100),
+    area_license_numb VARCHAR(50) PRIMARY KEY,
+    owner_name VARCHAR(100),
+    owner_email VARCHAR(100),
+    company_email VARCHAR(100),
+    address TEXT,
+    owner_phnNo VARCHAR(15),
+    work_phnNo VARCHAR(15)
+);
