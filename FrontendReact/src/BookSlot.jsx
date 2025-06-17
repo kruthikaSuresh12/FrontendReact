@@ -46,4 +46,5 @@ const BookSlot = () => {
   );
 };
 
+
 export default BookSlot;

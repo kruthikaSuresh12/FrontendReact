@@ -50,6 +50,7 @@ router.post('/submit-parking-info', (req, res) => {
       )
     `;
 
+    
     db.query(createTableQuery, (err, result) => {
       if (err) {
         console.error('Error creating slot table:', err);

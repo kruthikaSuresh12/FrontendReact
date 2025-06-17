@@ -13,6 +13,7 @@ import BookSlot from "./BookSlot";
 import TicketBookingForm from "./TicketBookingForm"
 import ParkingPlaceForm from "./ParkingPlaceForm"
 
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>

@@ -76,6 +76,7 @@ function App() {
   onClick={() => window.location.href = '/signup'} 
   className="px-8 py-4 rounded-full shadow-xl bg-black/30 text-white font-bold hover:bg-black/40 transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-2xl hover:-translate-y-1 border-2 border-white/30 animate-bounce-slower"
 >
+  
   Sign Up
 </button>
           </div>

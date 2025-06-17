@@ -94,6 +94,7 @@ app.post('/api/forgot-password', (req, res) => {
       });
     }
     
+    
     // 2. In a real app: Generate reset token and send email
     // For now, we'll just return a mock response
     res.json({ 
