@@ -4,11 +4,12 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
-
+import ticketSlotRoutes from './ticket_slotServer.js'; 
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use('/api', ticketSlotRoutes);
 
 // MySQL Connection
 const db = mysql.createConnection({

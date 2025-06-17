@@ -51,5 +51,6 @@ CREATE TABLE parking_place_side (
     company_email VARCHAR(100),
     address TEXT,
     owner_phnNo VARCHAR(15),
-    work_phnNo VARCHAR(15)
+    work_phnNo VARCHAR(15),
+    total_slots int
 );

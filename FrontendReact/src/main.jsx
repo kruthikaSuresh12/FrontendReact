@@ -8,7 +8,10 @@ import SignupPage from './signupPage.jsx'
 import ForgotPassword from './ForgotPassword.jsx'
 import ContactUs from './ContactUs';
 import MapComponent from './MapComponent';
-
+import MarkSlotPage from "./MarkSlotPage";
+import BookSlot from "./BookSlot";
+import TicketBookingForm from "./TicketBookingForm"
+import ParkingPlaceForm from "./ParkingPlaceForm"
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -20,6 +23,10 @@ createRoot(document.getElementById('root')).render(
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/Mapcomponent" element={<MapComponent />} />
         <Route path="/contactUs" element={<ContactUs />} /> 
+        <Route path="/MarkSlotPage" element={<MarkSlotPage />} /> 
+        <Route path="/book-slot" element={<BookSlot />} />
+        <Route path="/TicketBookingForm" element={<TicketBookingForm />} />
+        <Route path="/ParkingPlaceForm" element={<ParkingPlaceForm />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>

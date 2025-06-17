@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
   GoogleMap,
   Marker,
@@ -31,6 +33,8 @@ const MapComponent = () => {
   const [directions, setDirections] = useState(null);
   const [search, setSearch] = useState("");
   const [tracking, setTracking] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -107,6 +111,9 @@ const MapComponent = () => {
 
   const handleClick = (spot) => {
     setSelectedSpot(spot);
+    console.log("User Location:", userLocation);
+    console.log("Destination:", spot.lat, spot.lng);
+
     const directionsService = new window.google.maps.DirectionsService();
     directionsService.route(
       {
@@ -115,18 +122,20 @@ const MapComponent = () => {
         travelMode: window.google.maps.TravelMode.DRIVING,
       },
       (result, status) => {
+        console.log("Directions status:", status, result);
         if (status === window.google.maps.DirectionsStatus.OK) {
           setDirections(result);
         } else {
-          console.error(`Error fetching directions: ${status}`);
+          console.error("Directions failed:", status);
         }
       }
     );
   };
 
   const filteredSpots = nearbySpots.filter((spot) =>
-    spot.place.toLowerCase().includes(search.toLowerCase())
-  );
+  (spot.place || "").toLowerCase().includes(search.toLowerCase())
+);
+
 
   return (
     <div
@@ -192,7 +201,7 @@ const MapComponent = () => {
           <GoogleMap
             mapContainerStyle={{ height: "100%", width: "100%" }}
             center={userLocation || { lat: 0, lng: 0 }}
-            zoom={15}
+            zoom={11}
           >
             {userLocation && (
               <Marker
@@ -260,35 +269,65 @@ const MapComponent = () => {
         }}
       >
         {filteredSpots.map((spot) => (
-          <div
-            key={spot.id}
-            style={{
-              background: "#2c2c2c",
-              padding: "1rem",
-              marginBottom: "0.75rem",
-              borderRadius: "8px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              border: "1px solid #444",
-            }}
-          >
-            <div>{spot.place}</div>
-            <button
-              style={{
-                backgroundColor: "#0d6efd",
-                border: "none",
-                padding: "0.5rem 1rem",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                color: "white",
-              }}
-            >
-              Book Slot
-            </button>
-          </div>
-        ))}
+  <div
+    key={spot.id}
+    style={{
+      background: "#2c2c2c",
+      padding: "1rem",
+      marginBottom: "0.75rem",
+      borderRadius: "8px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      border: "1px solid #444",
+    }}
+  >
+    <div>{spot.place}</div>
+    <button
+  onClick={() => {
+    if (!userLocation) return alert("User location not available");
+
+    const directionsService = new window.google.maps.DirectionsService();
+
+    directionsService.route(
+      {
+        origin: userLocation,
+        destination: { lat: spot.lat, lng: spot.lng },
+        travelMode: window.google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        if (status === "OK") {
+          const leg = result.routes[0].legs[0];
+          navigate("/book-slot", {
+            state: {
+              place: spot.place,
+              address: leg.end_address,
+              distance: leg.distance.text,
+              duration: leg.duration.text,
+            },
+          });
+        } else {
+          alert("Failed to fetch directions");
+        }
+      }
+    );
+  }}
+  style={{
+    backgroundColor: "#0d6efd",
+    border: "none",
+    padding: "0.5rem 1rem",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    color: "white",
+  }}
+>
+  Book Slot
+</button>
+
+  </div>
+))}
+
       </div>
     </div>
   );
