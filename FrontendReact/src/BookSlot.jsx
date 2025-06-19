@@ -27,21 +27,26 @@ const BookSlot = () => {
       <p><strong>Estimated Time:</strong> {duration}</p>
 
       <button
-        onClick={() => window.location.href = '/TicketBookingForm'} 
-        style={{
-          marginTop: "2rem",
-          backgroundColor: "#61dafb",
-          border: "none",
-          padding: "0.75rem 1.5rem",
-          borderRadius: "8px",
-          fontSize: "1rem",
-          fontWeight: "bold",
-          cursor: "pointer",
-          color: "#000",
-        }}
-      >
-        Continue to Book
-      </button>
+  onClick={() =>
+    navigate('/TicketBookingForm', {
+      state: { spotName: place }  // ✅ Pass spot name to next page
+    })
+  }
+  style={{
+    marginTop: "2rem",
+    backgroundColor: "#61dafb",
+    border: "none",
+    padding: "0.75rem 1.5rem",
+    borderRadius: "8px",
+    fontSize: "1rem",
+    fontWeight: "bold",
+    cursor: "pointer",
+    color: "#000",
+  }}
+>
+  Continue to Book
+</button>
+
     </div>
   );
 };

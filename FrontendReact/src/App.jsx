@@ -1,7 +1,6 @@
 // App.jsx
 import { useState, useEffect } from 'react';
 import './App.css';
-// Image imports
 import locationPin from './assets/locationPin.png';
 import compass from './assets/compass.png';
 import car from './assets/car.png';
@@ -90,7 +89,7 @@ function App() {
             Find your perfect spot To Park. Join thousands of Spot here!
           </p>
           <button onClick={() => window.location.href = '/MapComponent'} className="px-16 py-6 rounded-full shadow-2xl text-3xl font-bold bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 transition-all duration-500 hover:scale-110 active:scale-95 hover:shadow-[0_0_30px_rgba(255,50,50,0.8)] border-4 border-white/30 text-white animate-pulse hover:animate-none mb-12" 
-            >
+          >
             <span className="relative z-10">Find Your Spot</span>
           </button>
         </main>

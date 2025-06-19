@@ -41,7 +41,7 @@ router.post('/submit-parking-info', (req, res) => {
   }
 
     // Step 2: Create company slot table
-    const tableName = companyName.replace(/\s+/g, '_').toLowerCase() + '_slot';
+    const tableName = companyName.replace(/\s+/g, '_').toLowerCase();
 
     const createTableQuery = `
       CREATE TABLE IF NOT EXISTS \`${tableName}\` (

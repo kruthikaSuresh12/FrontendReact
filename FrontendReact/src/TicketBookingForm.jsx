@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import './TicketBookingForm.css';
+import { useLocation } from "react-router-dom";
 
 const TicketBookingForm = () => {
+  const location = useLocation();
+  const spotName = location.state?.spotName || "Ticket Booking"; // from BookSlot.jsx
+
   const [formData, setFormData] = useState({
     carNumber: '',
     license: '',
-    spotName: '',
     startTime: '',
     endTime: '',
     driverName: '',
@@ -17,6 +20,9 @@ const TicketBookingForm = () => {
 
   const [errors, setErrors] = useState({});
 
+  // Get today's date in yyyy-mm-dd format for disabling past dates
+  const today = new Date().toISOString().split("T")[0];
+
   const validate = () => {
     const newErrors = {};
 
@@ -25,9 +31,6 @@ const TicketBookingForm = () => {
 
     if (!/^[A-Za-z0-9]{6,}$/.test(formData.license))
       newErrors.license = "License must be at least 6 alphanumeric characters";
-
-    if (!/^[A-Za-z\s]{3,20}$/.test(formData.spotName))
-      newErrors.spotName = "Spot name must be 3–20 letters";
 
     if (!formData.startTime || !formData.endTime)
       newErrors.startTime = "Start and end times are required";
@@ -40,14 +43,22 @@ const TicketBookingForm = () => {
     if (!/^\d{10}$/.test(formData.customerPhone))
       newErrors.customerPhone = "Invalid phone number";
 
-    if (!/^[A-Za-z0-9]{4,}$/.test(formData.date))
-      newErrors.spotCode = "Date error";
+    if (!formData.date)
+      newErrors.date = "Date is required";
 
     if (!/^[A-Za-z\s]{3,}$/.test(formData.ownerName))
       newErrors.ownerName = "Owner name must be at least 3 letters";
 
     if (!/^\d{10}$/.test(formData.ownerPhone))
       newErrors.ownerPhone = "Invalid phone number";
+
+    // Prevent booking in past date/time
+    const now = new Date();
+    const start = new Date(`${formData.date}T${formData.startTime}`);
+    const end = new Date(`${formData.date}T${formData.endTime}`);
+    if (start < now || end < now) {
+      newErrors.date = "Booking date/time cannot be in the past";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -58,11 +69,28 @@ const TicketBookingForm = () => {
     setErrors({ ...errors, [e.target.name]: '' });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
-      alert('Ticket Booked!');
-      console.log(formData);
+      const bookingData = { ...formData, spotName };
+
+      try {
+        const response = await fetch("http://localhost:5000/api/book-ticket", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bookingData),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          alert(result.message || "Ticket Booked!");
+        } else {
+          alert(result.error || result.message || "Booking failed");
+        }
+      } catch (err) {
+        console.error("Booking error:", err);
+        alert("Server error");
+      }
     } else {
       alert("Please fix the errors");
     }
@@ -70,7 +98,7 @@ const TicketBookingForm = () => {
 
   return (
     <div className="form-container">
-      <h2>Ticket Booking</h2>
+      <h2>{spotName}</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label>Car Number</label>
@@ -94,18 +122,6 @@ const TicketBookingForm = () => {
             placeholder="Enter License"
           />
           {errors.license && <p className="error">{errors.license}</p>}
-        </div>
-
-        <div>
-          <label>Spot Name</label>
-          <input
-            type="text"
-            name="spotName"
-            value={formData.spotName}
-            onChange={handleChange}
-            placeholder="Enter Spot Name"
-          />
-          {errors.spotName && <p className="error">{errors.spotName}</p>}
         </div>
 
         <div>
@@ -154,15 +170,16 @@ const TicketBookingForm = () => {
         </div>
 
         <div>
-  <label>Date</label>
-  <input
-    type="date"
-    name="date"
-    value={formData.date}
-    onChange={handleChange}
-  />
-</div>
-
+          <label>Date</label>
+          <input
+            type="date"
+            name="date"
+            min={today}
+            value={formData.date}
+            onChange={handleChange}
+          />
+          {errors.date && <p className="error">{errors.date}</p>}
+        </div>
 
         <div>
           <label>Owner Name</label>
@@ -195,4 +212,3 @@ const TicketBookingForm = () => {
 };
 
 export default TicketBookingForm;
-

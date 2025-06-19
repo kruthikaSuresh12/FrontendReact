@@ -5,11 +5,15 @@ import bodyParser from 'body-parser';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import ticketSlotRoutes from './ticket_slotServer.js'; 
+import ticketBookingRoutes from './BookTicketServer.js';
+
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use('/api', ticketSlotRoutes);
+app.use('/api', ticketBookingRoutes);
+
 
 // MySQL Connection
 const db = mysql.createConnection({
@@ -23,6 +27,34 @@ db.connect(err => {
   if (err) throw err;
   console.log('Connected to MySQL');
 });
+
+// 🔁 Auto-release expired bookings every 1 minute
+setInterval(async () => {
+  try {
+    const [expired] = await db.promise().query(
+      `SELECT spot_name, spotId FROM ticket_info WHERE end_time < NOW()`
+    );
+
+    for (const row of expired) {
+      const tableName = row.spot_name.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+
+      // Mark the slot as empty again
+      await db.promise().query(
+        `UPDATE \`${tableName}\` SET status = 'empty' WHERE slotId = ?`,
+        [row.spotId]
+      );
+
+      // Delete the expired ticket from ticket_info
+      await db.promise().query(
+        `DELETE FROM ticket_info WHERE spot_name = ? AND spotId = ? AND end_time < NOW()`,
+        [row.spot_name, row.spotId]
+      );
+    }
+  } catch (err) {
+    console.error("❌ Auto-release error:", err);
+  }
+}, 60 * 1000); // Runs every 60 seconds
+
 
 // Signup Endpoint
 app.post('/api/signup', (req, res) => {
