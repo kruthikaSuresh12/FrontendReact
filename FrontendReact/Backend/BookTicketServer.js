@@ -53,7 +53,8 @@ router.post('/book-ticket', async (req, res) => {
       // Mark that slot as booked
       await db.promise().query(`UPDATE \`${tableName}\` SET status = 'booked' WHERE slotId = ?`, [slotId]);
 
-      return res.status(200).json({ message: `Ticket booked. Assigned Slot: ${slotId}` });
+      return res.status(200).json({ message: "Ticket booked", slotId });
+
     }
 
     // Step 2: If no empty slots, check for reusable (non-overlapping) slots
@@ -87,7 +88,8 @@ router.post('/book-ticket', async (req, res) => {
           ]
         );
 
-        return res.status(200).json({ message: `Ticket booked. Assigned Slot: ${slotId}` });
+        return res.status(200).json({ message: "Ticket booked", slotId });
+
       }
     }
 

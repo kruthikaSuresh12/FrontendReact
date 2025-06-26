@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import './TicketBookingForm.css';
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const TicketBookingForm = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
   const spotName = location.state?.spotName || "Ticket Booking"; // from BookSlot.jsx
 
   const [formData, setFormData] = useState({
@@ -84,6 +87,7 @@ const TicketBookingForm = () => {
         const result = await response.json();
         if (response.ok) {
           alert(result.message || "Ticket Booked!");
+          navigate("/ticket", { state: { ...formData, spotName, slotId: result.slotId } });
         } else {
           alert(result.error || result.message || "Booking failed");
         }

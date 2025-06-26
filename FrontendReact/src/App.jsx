@@ -39,7 +39,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-500 to-lavender-300 text-white overflow-hidden flex flex-col items-center justify-center transform translate-x-90">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-500 to-lavender-300 text-white overflow-hidden flex flex-col items-center justify-center transform translate-x-5">
       {/* Floating elements */}
       {floatingElements.map((element) => (
         <div key={element.id} className="absolute pointer-events-none" style={{

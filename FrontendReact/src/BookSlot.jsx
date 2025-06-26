@@ -16,7 +16,7 @@ const BookSlot = () => {
         color: "white",
         fontFamily: "sans-serif",
         minHeight: "100vh",
-        marginLeft:"32rem"
+        marginLeft:"3rem"
       }}
     >
       <h1 style={{ fontSize: "2.5rem", fontWeight: "bold", marginBottom: "1rem" }}>

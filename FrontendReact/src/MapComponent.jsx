@@ -146,7 +146,7 @@ const MapComponent = () => {
         color: "white",
         minHeight: "10vh",
         boxSizing: "border-box",
-        marginLeft: "30rem" 
+        marginLeft: "2rem" 
       }}
     >
       <h1
