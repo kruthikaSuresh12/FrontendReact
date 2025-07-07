@@ -12,6 +12,8 @@
   "description": "",
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
-    "@react-google-maps/api": "^2.20.6"
+    "@react-google-maps/api": "^2.20.6",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2"
   }
 }

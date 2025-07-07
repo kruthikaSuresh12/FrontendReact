@@ -15,14 +15,16 @@ router.post('/submit-parking-info', (req, res) => {
     address,
     ownerPhone,
     workPhone,
-    totalSlots
+    totalSlots,
+    amountPerHour // 🆕 New field
   } = req.body;
 
+  // Step 1: Insert into parking_place_side (now with amountPerHour)
   const insertQuery = `
-  INSERT INTO parking_place_side 
-  (company_name, area_license_numb, company_email, address, owner_phnNo, work_phnNo,owner_name,owner_gmail, total_slots)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-`;
+    INSERT INTO parking_place_side 
+    (company_name, area_license_numb, company_email, address, owner_phnNo, work_phnNo, owner_name, owner_gmail, total_slots, amount_per_hour)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
 
   db.query(insertQuery, [
     companyName,
@@ -33,12 +35,13 @@ router.post('/submit-parking-info', (req, res) => {
     workPhone,
     ownerName,
     ownerGmail,
-    totalSlots
+    totalSlots,
+    amountPerHour // 🆕 Send value to DB
   ], (err, result) => {
     if (err) {
-    console.error('❌ SQL Insert Error:', err.sqlMessage); // PRINTS ACTUAL REASON
-    return res.status(500).json({ error: err.sqlMessage }); // SENDS ERROR TO FRONTEND
-  }
+      console.error('❌ SQL Insert Error:', err.sqlMessage);
+      return res.status(500).json({ error: err.sqlMessage });
+    }
 
     // Step 2: Create company slot table
     const tableName = companyName.replace(/\s+/g, '_').toLowerCase();
@@ -50,14 +53,13 @@ router.post('/submit-parking-info', (req, res) => {
       )
     `;
 
-    
     db.query(createTableQuery, (err, result) => {
       if (err) {
         console.error('Error creating slot table:', err);
         return res.status(500).json({ error: 'Table creation failed' });
       }
 
-      // Step 3: Insert slot IDs
+      // Step 3: Insert empty slot rows
       const values = [];
       for (let i = 1; i <= totalSlots; i++) {
         const id = 'T' + i.toString().padStart(3, '0');

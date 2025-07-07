@@ -12,6 +12,7 @@ const ParkingPlaceForm = () => {
     ownerPhone: '',
     workPhone: '',
     totalSlots: '',
+    amountPerHour: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -45,6 +46,9 @@ const ParkingPlaceForm = () => {
 
     if (!/^\d+$/.test(formData.totalSlots) || parseInt(formData.totalSlots) < 1)
       newErrors.totalSlots = "Enter valid slot count (1 or more)";
+
+    if (!/^\d+(\.\d{1,2})?$/.test(formData.amountPerHour) || parseFloat(formData.amountPerHour) <= 0)
+    newErrors.amountPerHour = "Enter a valid positive amount";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
