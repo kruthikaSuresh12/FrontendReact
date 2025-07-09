@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
+import { useEffect } from "react";
 import './TicketBookingForm.css';
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +9,7 @@ const TicketBookingForm = () => {
   const navigate = useNavigate();
 
   const spotName = location.state?.spotName || "Ticket Booking"; // from BookSlot.jsx
+  const amountPerHour = location.state?.amountPerHour || 0;
 
   const [formData, setFormData] = useState({
     carNumber: '',
@@ -22,6 +24,26 @@ const TicketBookingForm = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [totalAmount, setTotalAmount] = useState(0);
+
+useEffect(() => {
+  if (formData.startTime && formData.endTime) {
+    const [startH, startM] = formData.startTime.split(":").map(Number);
+    const [endH, endM] = formData.endTime.split(":").map(Number);
+
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    const durationMinutes = endMinutes - startMinutes;
+    if (durationMinutes > 0) {
+      const hours = durationMinutes / 60;
+      const cost = Math.ceil(hours * amountPerHour);
+      setTotalAmount(cost);
+    } else {
+      setTotalAmount(0);
+    }
+  }
+}, [formData.startTime, formData.endTime, amountPerHour]);
 
   // Get today's date in yyyy-mm-dd format for disabling past dates
   const today = new Date().toISOString().split("T")[0];
@@ -208,6 +230,17 @@ const TicketBookingForm = () => {
           />
           {errors.ownerPhone && <p className="error">{errors.ownerPhone}</p>}
         </div>
+
+        <div>
+  <label>💰 Total Amount</label>
+  <input
+    type="text"
+    value={`₹${totalAmount}`}
+    disabled
+    style={{ fontWeight: "bold", backgroundColor: "#f0f0f0", color:"black" }}
+  />
+</div>
+
 
         <button type="submit">Book Ticket</button>
       </form>

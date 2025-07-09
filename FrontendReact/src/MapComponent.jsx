@@ -68,7 +68,7 @@ const MapComponent = () => {
           spot.lat,
           spot.lng
         );
-        return dist <= 20000;
+        return dist <= 1000000;
       });
       setNearbySpots(nearby);
     }
@@ -299,13 +299,15 @@ const MapComponent = () => {
         if (status === "OK") {
           const leg = result.routes[0].legs[0];
           navigate("/book-slot", {
-            state: {
-              place: spot.place,
-              address: leg.end_address,
-              distance: leg.distance.text,
-              duration: leg.duration.text,
-            },
-          });
+          state: {
+          place: spot.place,
+          address: leg.end_address,
+          distance: leg.distance.text,
+          duration: leg.duration.text,
+          amountPerHour: spot.amount_per_hour   
+          }
+        });
+
         } else {
           alert("Failed to fetch directions");
         }

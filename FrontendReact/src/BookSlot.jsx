@@ -6,7 +6,7 @@ const BookSlot = () => {
 
   if (!state) return <div>No spot selected.</div>;
 
-  const { place, address, distance, duration } = state;
+  const { place, address, distance, duration, amountPerHour } = state;
 
   return (
     <div
@@ -16,7 +16,7 @@ const BookSlot = () => {
         color: "white",
         fontFamily: "sans-serif",
         minHeight: "100vh",
-        marginLeft:"3rem"
+        marginLeft: "3rem"
       }}
     >
       <h1 style={{ fontSize: "2.5rem", fontWeight: "bold", marginBottom: "1rem" }}>
@@ -25,31 +25,31 @@ const BookSlot = () => {
       <p><strong>Address:</strong> {address}</p>
       <p><strong>Distance:</strong> {distance}</p>
       <p><strong>Estimated Time:</strong> {duration}</p>
+      <p><strong>Rate:</strong> ₹{amountPerHour || 'N/A'} per hour</p>
+
 
       <button
-  onClick={() =>
-    navigate('/TicketBookingForm', {
-      state: { spotName: place }  // ✅ Pass spot name to next page
-    })
-  }
-  style={{
-    marginTop: "2rem",
-    backgroundColor: "#61dafb",
-    border: "none",
-    padding: "0.75rem 1.5rem",
-    borderRadius: "8px",
-    fontSize: "1rem",
-    fontWeight: "bold",
-    cursor: "pointer",
-    color: "#000",
-  }}
->
-  Continue to Book
-</button>
-
+        onClick={() =>
+          navigate('/TicketBookingForm', {
+            state: { spotName: place, amountPerHour }
+          })
+        }
+        style={{
+          marginTop: "2rem",
+          backgroundColor: "#61dafb",
+          border: "none",
+          padding: "0.75rem 1.5rem",
+          borderRadius: "8px",
+          fontSize: "1rem",
+          fontWeight: "bold",
+          cursor: "pointer",
+          color: "#000",
+        }}
+      >
+        Continue to Book
+      </button>
     </div>
   );
 };
-
 
 export default BookSlot;

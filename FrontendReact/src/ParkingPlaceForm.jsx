@@ -13,6 +13,8 @@ const ParkingPlaceForm = () => {
     workPhone: '',
     totalSlots: '',
     amountPerHour: '',
+    latitude: '',
+    longitude: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -49,6 +51,12 @@ const ParkingPlaceForm = () => {
 
     if (!/^\d+(\.\d{1,2})?$/.test(formData.amountPerHour) || parseFloat(formData.amountPerHour) <= 0)
     newErrors.amountPerHour = "Enter a valid positive amount";
+
+    if (!/^[-+]?[0-9]*\.?[0-9]+$/.test(formData.latitude))
+    newErrors.latitude = "Enter valid latitude";
+
+    if (!/^[-+]?[0-9]*\.?[0-9]+$/.test(formData.longitude))
+    newErrors.longitude = "Enter valid longitude";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
