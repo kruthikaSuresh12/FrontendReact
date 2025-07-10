@@ -13,6 +13,7 @@ import BookSlot from "./BookSlot";
 import TicketBookingForm from "./TicketBookingForm"
 import ParkingPlaceForm from "./ParkingPlaceForm"
 import Ticket from './Ticket';
+import Pay from './pay';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -29,6 +30,8 @@ createRoot(document.getElementById('root')).render(
         <Route path="/TicketBookingForm" element={<TicketBookingForm />} />
         <Route path="/ParkingPlaceForm" element={<ParkingPlaceForm />} />
         <Route path="/ticket" element={<Ticket />} />
+        <Route path="/pay" element={<Pay />} />
+        
 
       </Routes>
     </BrowserRouter>

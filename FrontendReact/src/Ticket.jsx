@@ -1,26 +1,42 @@
 // Ticket.jsx
 import React from "react";
 import { useLocation } from "react-router-dom";
-import "./Ticket.css"; // Optional CSS for styling
+import "./Ticket.css"; // Optional styling
 
 const Ticket = () => {
   const { state } = useLocation();
-  if (!state) return <p>No ticket info found</p>;
+
+  if (!state || !state.formData) return <p>No ticket info found</p>;
+
+  const { formData, spotName, slotId, totalAmount } = state;
+
+  const {
+    carNumber,
+    license,
+    startTime,
+    endTime,
+    driverName,
+    customerPhone,
+    date,
+    ownerName,
+    ownerPhone
+  } = formData;
 
   return (
     <div className="ticket">
       <h2>🎫 Parking Ticket</h2>
-      <p><strong>Spot Name:</strong> {state.spotName}</p>
-      <p><strong>Slot ID:</strong> {state.slotId}</p>
-      <p><strong>Date:</strong> {state.date}</p>
-      <p><strong>Start Time:</strong> {state.startTime}</p>
-      <p><strong>End Time:</strong> {state.endTime}</p>
-      <p><strong>Car Number:</strong> {state.carNumber}</p>
-      <p><strong>License:</strong> {state.license}</p>
-      <p><strong>Driver:</strong> {state.driverName}</p>
-      <p><strong>Customer Phone:</strong> {state.customerPhone}</p>
-      <p><strong>Owner Name:</strong> {state.ownerName}</p>
-      <p><strong>Owner Phone:</strong> {state.ownerPhone}</p>
+      <p><strong>Spot Name:</strong> {spotName}</p>
+      <p><strong>Slot ID:</strong> {slotId}</p>
+      <p><strong>Date:</strong> {date}</p>
+      <p><strong>Start Time:</strong> {startTime}</p>
+      <p><strong>End Time:</strong> {endTime}</p>
+      <p><strong>Car Number:</strong> {carNumber}</p>
+      <p><strong>License:</strong> {license}</p>
+      <p><strong>Driver:</strong> {driverName}</p>
+      <p><strong>Customer Phone:</strong> {customerPhone}</p>
+      <p><strong>Owner Name:</strong> {ownerName}</p>
+      <p><strong>Owner Phone:</strong> {ownerPhone}</p>
+      <p><strong>💰 Amount Paid:</strong> ₹{totalAmount}</p>
     </div>
   );
 };

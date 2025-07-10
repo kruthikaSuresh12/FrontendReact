@@ -108,8 +108,16 @@ useEffect(() => {
 
         const result = await response.json();
         if (response.ok) {
-          alert(result.message || "Ticket Booked!");
-          navigate("/ticket", { state: { ...formData, spotName, slotId: result.slotId } });
+          alert(result.message || "Proceed to pay!");
+          navigate("/pay", {
+          state: {
+          formData, // send entire form
+          spotName,
+          slotId: result.slotId,
+          totalAmount
+         }
+        });
+
         } else {
           alert(result.error || result.message || "Booking failed");
         }
