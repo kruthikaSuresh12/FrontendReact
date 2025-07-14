@@ -14,6 +14,7 @@ import TicketBookingForm from "./TicketBookingForm"
 import ParkingPlaceForm from "./ParkingPlaceForm"
 import Ticket from './Ticket';
 import Pay from './pay';
+import ResetPassword from './reSetPassword.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -31,6 +32,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/ParkingPlaceForm" element={<ParkingPlaceForm />} />
         <Route path="/ticket" element={<Ticket />} />
         <Route path="/pay" element={<Pay />} />
+        <Route path="/ResetPassword" element={<reSetPassword/>} />
         
 
       </Routes>

@@ -1,4 +1,3 @@
-// src/signupPage.jsx
 import { useState } from 'react';
 import './App.css';
 
@@ -18,19 +17,16 @@ function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const response = await fetch('http://localhost:5000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-
       const data = await response.json();
-
       if (response.ok) {
         alert('Sign Up Successful!');
-        window.location.href = '/Mapcomponent'; // Redirect to Find Spot
+        window.location.href = '/Mapcomponent';
       } else {
         alert(data.message || 'Invalid email or password');
       }
@@ -41,66 +37,102 @@ function SignupPage() {
   };
 
   return (
-    <div className="bg-black flex items-center justify-center mr-10 transform translate-x-140">
-      {/* Centered Form Container */}
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-md w-full bg-gradient-to-br from-indigo-600 via-purple-500 to-pink-500 rounded-xl shadow-2xl overflow-hidden border-2 border-white/30 p-20 animate-fadeIn"
-      >
-        {/* Back to Home Button */}
+    <div className="min-h-screen flex items-center p-4 ">
+      {/* Form Container */}
+      <div className=" w-full max-w-md">
+        {/* Back Button */}
         <button
           onClick={() => window.location.href = '/'}
-          className="absolute top-6 left-6 px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition animate-slideDown"
+          className="absolute -top-12 left-0 flex items-center text-white hover:text-blue-300 transition-colors"
         >
-          ← Back to Home
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+          </svg>
+          Back to Home
         </button>
 
-        {/* Form Header */}
-        <h2 className="text-3xl font-bold mb-8 text-center drop-shadow-lg">Login</h2>
+        {/* Form Card */}
+        <div className="bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-700">
+          <div className="p-8">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-white">Welcome Back</h2>
+              <p className="text-gray-400 mt-2">Sign in to your account</p>
+            </div>
 
-        {/* Email Field */}
-        <div>
-          <label className="block text-white/80 mb-2">Email Address</label>
-          <input
-            type="email"
-            name="emailID"
-            value={formData.emailID}
-            onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-white/50 border-2 border-white/30 focus:border-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
-            placeholder="Enter your email"
-            required
-          />
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Email Field */}
+              <div>
+                <label htmlFor="emailID" className="block text-sm font-medium text-gray-300 mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  id="emailID"
+                  name="emailID"
+                  value={formData.emailID}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded bg-gray-700"
+                  />
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
+                    Remember me
+                  </label>
+                </div>
+                <a href="/forgot-password" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+                  Forgot password?
+                </a>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+              >
+                Sign In
+              </button>
+            </form>
+
+            {/* Sign Up Link */}
+            <div className="mt-6 text-center text-sm text-gray-400">
+              Don't have an account?{' '}
+              <a href="/signup" className="text-blue-400 hover:text-blue-300 transition-colors">
+                Sign up
+              </a>
+            </div>
+          </div>
         </div>
-
-        {/* Password Field */}
-        <div className="mt-4">
-          <label className="block text-white/80 mb-2">Password</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-white/50 border-2 border-white/30 focus:border-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all"
-            placeholder="Enter password"
-            required
-          />
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full py-4 px-6 mt-6 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold rounded-lg shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
-        >
-          Sign In
-        </button>
-
-        {/* Forgot Password Link */}
-        <div className="mt-4 text-center text-white/80">
-          <a href="/forgot-password" className="text-yellow-300 hover:text-yellow-500 transition">
-            Forgot Password?
-          </a>
-        </div>
-      </form>
+      </div>
     </div>
   );
 }

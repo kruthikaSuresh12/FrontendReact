@@ -115,7 +115,7 @@ function App() {
           {/* CTA Button (centered with hover effects) */}
           <div className="spot-background">
             <button 
-              onClick={() => window.location.href = '/MapComponent'} 
+              onClick={() => window.location.href = '/login'} 
               onMouseEnter={() => setIsHovering(true)}
               onMouseLeave={() => setIsHovering(false)}
               className="z-20 px-16 py-6 rounded-full shadow-2xl text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 transition-all duration-500 hover:scale-110 active:scale-95 hover:shadow-[0_0_40px_rgba(74,222,128,0.6)] border-4 border-white/30 text-white animate-pulse hover:animate-none"
