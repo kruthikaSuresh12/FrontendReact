@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import './map.css';
 
 import {
   GoogleMap,
@@ -142,51 +143,26 @@ const MapComponent = () => {
       style={{
         padding: "3rem",
         fontFamily: "sans-serif",
-        backgroundColor: "#121212",
+        backgroundColor: "#0e0808ff",
         color: "white",
         minHeight: "10vh",
         boxSizing: "border-box",
-        marginLeft: "2rem" 
+        marginRight: "25rem",
       }}
     >
-      <h1
-        style={{
-          fontSize: "2.5rem",
-          fontWeight: "bold",
-          textAlign: "center",
-          marginBottom: "1.5rem",
-        }}
-      >
-        Google Map Nearby Spot
-      </h1>
+      <div className="app-header">
+  <h1 className="app-title">Google Map Nearby Spot</h1>
+</div>
 
       <input
-        type="text"
-        placeholder="Search bar"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{
-          padding: "0.75rem",
-          width: "100%",
-          marginBottom: "1rem",
-          borderRadius: "8px",
-          border: "1px solid #444",
-          fontSize: "1rem",
-          backgroundColor: "#1e1e1e",
-          color: "white",
-        }}
-      />
+  type="text"
+  placeholder="Search bar"
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  className="search-input"
+/>
 
-      <h2
-        style={{
-          fontSize: "1.2rem",
-          fontWeight: "bold",
-          textAlign: "center",
-          margin: "1rem 0",
-        }}
-      >
-        Spots Near You
-      </h2>
+      <h2 className="section-title">Spots Near You</h2>
 
       <div
         style={{
@@ -197,6 +173,7 @@ const MapComponent = () => {
           border: "1px solid #444",
         }}
       >
+        <div className="map-wrapper">
         <LoadScript googleMapsApiKey={import.meta.env.VITE_API_KEY}>
           <GoogleMap
             mapContainerStyle={{ height: "100%", width: "100%" }}
@@ -222,6 +199,7 @@ const MapComponent = () => {
           </GoogleMap>
         </LoadScript>
       </div>
+      </div>
 
       {selectedSpot && directions && (
         <div
@@ -243,19 +221,11 @@ const MapComponent = () => {
           </div>
           <div style={{ marginTop: "0.5rem" }}>
             <button
-              onClick={() => setTracking(!tracking)}
-              style={{
-                backgroundColor: tracking ? "red" : "#61dafb",
-                border: "none",
-                padding: "0.5rem 1rem",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                color: "black",
-              }}
-            >
-              {tracking ? "Stop" : "Start"}
-            </button>
+  onClick={() => setTracking(!tracking)}
+  className={`action-button ${tracking ? 'tracking' : 'track-button'}`}
+>
+  {tracking ? "Stop" : "Start"}
+</button>
           </div>
         </div>
       )}
