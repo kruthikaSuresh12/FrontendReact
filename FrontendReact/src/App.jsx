@@ -74,7 +74,7 @@ function App() {
         {/* Header */}
         <header className="w-full flex flex-col md:flex-row justify-between items-center mb-8 md:mb-16 gap-6">
           <button 
-            onClick={() => setActiveButton("addArea")} 
+             onClick={() => window.location.href = 'https://forms.gle/LLoCcmiS7KbrkqLW8' }
             className="px-8 py-4 rounded-full shadow-lg bg-white/90 text-indigo-800 font-bold hover:bg-white transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-xl hover:-translate-y-1 border-2 border-white backdrop-blur-sm group"
           >
             <span className="relative z-10 group-hover:text-indigo-600 transition-colors">Add Your Area</span>
