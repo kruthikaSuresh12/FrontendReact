@@ -8,7 +8,7 @@ CREATE TABLE marked_spots (
   lng DOUBLE NOT NULL
 );
 
-INSERT INTO marked_spots (lat, lng)
+INSERT INTO marked_spots (lat, lng,Place)
 VALUES
 (120899138,77.505416),
 (12.902093,77.505537),

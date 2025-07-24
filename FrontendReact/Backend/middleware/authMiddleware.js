@@ -1,33 +1,26 @@
-import jwt from 'jsonwebtoken';
-const JWT_SECRET = "VITE_API_KEY";
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
-const verifyToken = (req, res, next) => {
-  // Check for token in cookies, headers, or localStorage (handled by frontend)
-  const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({ 
-      error: "Unauthorized - No token provided" 
-    });
-  }
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    console.error("Token Verification Error:", err);
-    
-    if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
-        error: "Session expired. Please login again." 
-      });
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/login');
     }
-    
-    return res.status(401).json({ 
-      error: "Invalid token" 
-    });
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
+
+  return user ? children : null;
 };
 
-export default verifyToken;
+export default ProtectedRoute;

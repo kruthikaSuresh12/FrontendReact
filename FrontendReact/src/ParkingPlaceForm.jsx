@@ -50,13 +50,13 @@ const ParkingPlaceForm = () => {
       newErrors.totalSlots = "Enter valid slot count (1 or more)";
 
     if (!/^\d+(\.\d{1,2})?$/.test(formData.amountPerHour) || parseFloat(formData.amountPerHour) <= 0)
-    newErrors.amountPerHour = "Enter a valid positive amount";
+      newErrors.amountPerHour = "Enter a valid positive amount";
 
     if (!/^[-+]?[0-9]*\.?[0-9]+$/.test(formData.latitude))
-    newErrors.latitude = "Enter valid latitude";
+      newErrors.latitude = "Enter valid latitude";
 
     if (!/^[-+]?[0-9]*\.?[0-9]+$/.test(formData.longitude))
-    newErrors.longitude = "Enter valid longitude";
+      newErrors.longitude = "Enter valid longitude";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -69,33 +69,46 @@ const ParkingPlaceForm = () => {
 
   const handleSubmit = async (e) => {
   e.preventDefault();
-  if (validate()) {
-    try {
-      const response = await fetch('http://localhost:5000/api/submit-parking-info', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        alert(result.message || 'Parking Place Info Submitted!');
-        console.log("Server response:", result);
-      } else {
-        alert('Error: ' + result.error);
-        console.error("Error response from server:", result);
-      }
-    } catch (error) {
-      console.error('❌ Error submitting parking data:', error);
-      alert('Failed to connect to the server.');
-    }
-  } else {
+  if (!validate()) {
     alert("Please fix the errors");
+    return;
+  }
+
+  try {
+    const response = await fetch('http://localhost:5001/api/submit-parking-info', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Submission failed');
+    }
+
+    const result = await response.json();
+    alert(result.message || 'Parking Place Info Submitted!');
+    // Reset form if needed
+    setFormData({
+      companyName: '',
+      areaLicense: '',
+      ownerName: '',
+      ownerGmail: '',
+      companyEmail: '',
+      address: '',
+      ownerPhone: '',
+      workPhone: '',
+      totalSlots: '',
+      amountPerHour: '',
+      latitude: '',
+      longitude: '',
+    });
+
+  } catch (error) {
+    console.error('Error:', error);
+    alert(error.message || 'Failed to submit parking data');
   }
 };
-
 
   return (
     <div className="form-container">
@@ -119,6 +132,5 @@ const ParkingPlaceForm = () => {
     </div>
   );
 };
-
 
 export default ParkingPlaceForm;

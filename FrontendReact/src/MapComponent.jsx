@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import './map.css';
-
 import {
   GoogleMap,
   Marker,
@@ -34,6 +33,8 @@ const MapComponent = () => {
   const [directions, setDirections] = useState(null);
   const [search, setSearch] = useState("");
   const [tracking, setTracking] = useState(false);
+  const [loadingSpots, setLoadingSpots] = useState(true);
+  const [error, setError] = useState(null);
 
   const navigate = useNavigate();
 
@@ -55,9 +56,25 @@ const MapComponent = () => {
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:5001/api/spots")
-      .then((res) => res.json())
-      .then((data) => setSpots(data));
+    const fetchSpots = async () => {
+      try {
+        const response = await fetch('http://localhost:5001/api/spots');
+        if (!response.ok) {
+          throw new Error('Failed to fetch spots');
+        }
+        const data = await response.json();
+        setSpots(data);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching spots:', error);
+        setError(error.message);
+        setSpots([]);
+      } finally {
+        setLoadingSpots(false);
+      }
+    };
+    
+    fetchSpots();
   }, []);
 
   useEffect(() => {
@@ -110,33 +127,43 @@ const MapComponent = () => {
     return () => clearInterval(interval);
   }, [tracking, selectedSpot]);
 
-  const handleClick = (spot) => {
+  const handleClick = async (spot) => {
     setSelectedSpot(spot);
-    console.log("User Location:", userLocation);
-    console.log("Destination:", spot.lat, spot.lng);
+    
+    if (!userLocation) {
+      console.error("User location not available");
+      return;
+    }
 
-    const directionsService = new window.google.maps.DirectionsService();
-    directionsService.route(
-      {
-        origin: userLocation,
-        destination: { lat: spot.lat, lng: spot.lng },
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      },
-      (result, status) => {
-        console.log("Directions status:", status, result);
-        if (status === window.google.maps.DirectionsStatus.OK) {
-          setDirections(result);
-        } else {
-          console.error("Directions failed:", status);
-        }
-      }
-    );
+    try {
+      const directionsService = new window.google.maps.DirectionsService();
+      const result = await new Promise((resolve, reject) => {
+        directionsService.route(
+          {
+            origin: userLocation,
+            destination: { lat: spot.lat, lng: spot.lng },
+            travelMode: window.google.maps.TravelMode.DRIVING,
+          },
+          (result, status) => {
+            if (status === 'OK') {
+              resolve(result);
+            } else {
+              reject(new Error(`Directions request failed: ${status}`));
+            }
+          }
+        );
+      });
+      
+      setDirections(result);
+    } catch (error) {
+      console.error("Directions error:", error);
+      alert("Failed to get directions. Please try again.");
+    }
   };
 
   const filteredSpots = nearbySpots.filter((spot) =>
-  (spot.place || "").toLowerCase().includes(search.toLowerCase())
-);
-
+    (spot.place || "").toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div
@@ -151,18 +178,21 @@ const MapComponent = () => {
       }}
     >
       <div className="app-header">
-  <h1 className="app-title">Google Map Nearby Spot</h1>
-</div>
+        <h1 className="app-title">Google Map Nearby Spot</h1>
+      </div>
 
       <input
-  type="text"
-  placeholder="Search bar"
-  value={search}
-  onChange={(e) => setSearch(e.target.value)}
-  className="search-input"
-/>
+        type="text"
+        placeholder="Search bar"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="search-input"
+      />
 
       <h2 className="section-title">Spots Near You</h2>
+
+      {loadingSpots && <div className="loading-message">Loading spots...</div>}
+      {error && <div className="error-message">Error: {error}</div>}
 
       <div
         style={{
@@ -174,31 +204,32 @@ const MapComponent = () => {
         }}
       >
         <div className="map-wrapper">
-        <LoadScript googleMapsApiKey={import.meta.env.VITE_API_KEY}>
-          <GoogleMap
-            mapContainerStyle={{ height: "100%", width: "100%" }}
-            center={userLocation || { lat: 0, lng: 0 }}
-            zoom={11}
-          >
-            {userLocation && (
-              <Marker
-                position={userLocation}
-                icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                label="You"
-              />
-            )}
-            {filteredSpots.map((spot) => (
-              <Marker
-                key={spot.id}
-                position={{ lat: spot.lat, lng: spot.lng }}
-                label={spot.place}
-                onClick={() => handleClick(spot)}
-              />
-            ))}
-            {directions && <DirectionsRenderer directions={directions} />}
-          </GoogleMap>
-        </LoadScript>
-      </div>
+          <LoadScript googleMapsApiKey={import.meta.env.VITE_API_KEY}>
+            <GoogleMap
+              mapContainerStyle={{ height: "100%", width: "100%" }}
+              center={userLocation || { lat: 0, lng: 0 }}
+              zoom={11}
+            >
+              {userLocation && (
+                <Marker
+                  position={userLocation}
+                  icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                  label="You"
+                />
+              )}
+              {filteredSpots.map((spot) => (
+                <Marker
+                  key={spot.id}
+                  position={{ lat: spot.lat, lng: spot.lng }}
+                  label={spot.place}
+                  onClick={() => handleClick(spot)}
+                  __ignoreDeprecationWarning={true}
+                />
+              ))}
+              {directions && <DirectionsRenderer directions={directions} />}
+            </GoogleMap>
+          </LoadScript>
+        </div>
       </div>
 
       {selectedSpot && directions && (
@@ -221,11 +252,11 @@ const MapComponent = () => {
           </div>
           <div style={{ marginTop: "0.5rem" }}>
             <button
-  onClick={() => setTracking(!tracking)}
-  className={`action-button ${tracking ? 'tracking' : 'track-button'}`}
->
-  {tracking ? "Stop" : "Start"}
-</button>
+              onClick={() => setTracking(!tracking)}
+              className={`action-button ${tracking ? 'tracking' : 'track-button'}`}
+            >
+              {tracking ? "Stop" : "Start"}
+            </button>
           </div>
         </div>
       )}
@@ -239,67 +270,64 @@ const MapComponent = () => {
         }}
       >
         {filteredSpots.map((spot) => (
-  <div
-    key={spot.id}
-    style={{
-      background: "#2c2c2c",
-      padding: "1rem",
-      marginBottom: "0.75rem",
-      borderRadius: "8px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      border: "1px solid #444",
-    }}
-  >
-    <div>{spot.place}</div>
-    <button
-  onClick={() => {
-    if (!userLocation) return alert("User location not available");
+          <div
+            key={spot.id}
+            style={{
+              background: "#2c2c2c",
+              padding: "1rem",
+              marginBottom: "0.75rem",
+              borderRadius: "8px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              border: "1px solid #444",
+            }}
+          >
+            <div>{spot.place}</div>
+            <button
+              onClick={() => {
+                if (!userLocation) return alert("User location not available");
 
-    const directionsService = new window.google.maps.DirectionsService();
+                const directionsService = new window.google.maps.DirectionsService();
 
-    directionsService.route(
-      {
-        origin: userLocation,
-        destination: { lat: spot.lat, lng: spot.lng },
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      },
-      (result, status) => {
-        if (status === "OK") {
-          const leg = result.routes[0].legs[0];
-          navigate("/book-slot", {
-          state: {
-          place: spot.place,
-          address: leg.end_address,
-          distance: leg.distance.text,
-          duration: leg.duration.text,
-          amountPerHour: spot.amount_per_hour   
-          }
-        });
-
-        } else {
-          alert("Failed to fetch directions");
-        }
-      }
-    );
-  }}
-  style={{
-    backgroundColor: "#0d6efd",
-    border: "none",
-    padding: "0.5rem 1rem",
-    borderRadius: "6px",
-    cursor: "pointer",
-    fontWeight: "bold",
-    color: "white",
-  }}
->
-  Book Slot
-</button>
-
-  </div>
-))}
-
+                directionsService.route(
+                  {
+                    origin: userLocation,
+                    destination: { lat: spot.lat, lng: spot.lng },
+                    travelMode: window.google.maps.TravelMode.DRIVING,
+                  },
+                  (result, status) => {
+                    if (status === "OK") {
+                      const leg = result.routes[0].legs[0];
+                      navigate("/book-slot", {
+                        state: {
+                          place: spot.place,
+                          address: leg.end_address,
+                          distance: leg.distance.text,
+                          duration: leg.duration.text,
+                          amountPerHour: spot.amount_per_hour   
+                        }
+                      });
+                    } else {
+                      alert("Failed to fetch directions");
+                    }
+                  }
+                );
+              }}
+              style={{
+                backgroundColor: "#0d6efd",
+                border: "none",
+                padding: "0.5rem 1rem",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "bold",
+                color: "white",
+              }}
+            >
+              Book Slot
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -61,9 +61,10 @@ const TicketBookingForm = () => {
     e.preventDefault();
     if (validate()) {
       try {
-        const response = await fetch("http://localhost:5000/api/book-ticket", {
+        const response = await fetch("http://localhost:5001/api/book-ticket", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: 'include',
           body: JSON.stringify({ ...formData, spotName }),
         });
         const result = await response.json();

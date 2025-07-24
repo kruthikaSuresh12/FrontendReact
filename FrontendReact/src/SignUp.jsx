@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 
 function SignupForm() {
@@ -11,6 +12,9 @@ function SignupForm() {
     confirm_password: '',
     gender: ''
   });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,38 +24,59 @@ function SignupForm() {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (formData.password !== formData.confirm_password) {
-      alert("Passwords don't match!");
-      return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+  
+  // Client-side validation
+  if (formData.password !== formData.confirm_password) {
+    setError("Passwords don't match!");
+    return;
+  }
+  if (formData.age < 13) {
+    setError("You must be at least 13 years old");
+    return;
+  }
+
+  setIsLoading(true);
+  
+  try {
+    const response = await fetch('http://localhost:5001/api/signup', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(formData)
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Registration failed');
     }
-    try {
-      const response = await fetch('http://localhost:5000/api/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-      const data = await response.json();
-      if (response.ok) {
-        alert('Registration successful!');
-        window.location.href = '/Mapcomponent';
-      } else {
-        throw new Error(data.error || 'Registration failed');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert(error.message);
-    }
-  };
+
+    // Store user data
+    localStorage.setItem('user', JSON.stringify(data.user));
+    
+    // Force a page reload to ensure auth context updates
+    window.location.href = '/Mapcomponent';
+    
+  } catch (error) {
+    console.error('Signup error:', error);
+    setError(error.message || 'Failed to connect to server. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center p-4">
       {/* Form Container */}
-      <div className="relative w-full max-w-md">
+      <div className="relative w-full max-w-md mx-auto">
         {/* Back Button */}
         <button
-          onClick={() => window.location.href = '/'}
+          onClick={() => navigate('/')}
           className="absolute -top-12 left-0 flex items-center text-white hover:text-blue-300 transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -69,6 +94,13 @@ function SignupForm() {
               <p className="text-gray-400 mt-2">Join us today</p>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-900/50 text-red-300 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Name Field */}
@@ -85,6 +117,7 @@ function SignupForm() {
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   placeholder="John Doe"
                   required
+                  autoComplete="name"
                 />
               </div>
 
@@ -120,6 +153,7 @@ function SignupForm() {
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   placeholder="your@email.com"
                   required
+                  autoComplete="email"
                 />
               </div>
 
@@ -137,6 +171,7 @@ function SignupForm() {
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   placeholder="+1 234 567 890"
                   required
+                  autoComplete="tel"
                 />
               </div>
 
@@ -154,6 +189,7 @@ function SignupForm() {
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   placeholder="••••••••"
                   required
+                  autoComplete="new-password"
                 />
               </div>
 
@@ -171,6 +207,7 @@ function SignupForm() {
                   className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   placeholder="••••••••"
                   required
+                  autoComplete="new-password"
                 />
               </div>
 
@@ -200,9 +237,10 @@ function SignupForm() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 mt-6"
+                disabled={isLoading}
+                className={`w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 mt-6 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
               >
-                Sign Up Now
+                {isLoading ? 'Signing Up...' : 'Sign Up Now'}
               </button>
             </form>
 

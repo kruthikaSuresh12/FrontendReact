@@ -18,7 +18,7 @@ function App() {
         id: i,
         type: types[Math.floor(Math.random() * types.length)],
         size: Math.random() * 40 + 20,
-        left: Math.random() * 100, // Now covers full width
+        left: Math.random() * 100,
         top: Math.random() * 100,
         delay: Math.random() * 10,
         duration: Math.random() * 15 + 10,
