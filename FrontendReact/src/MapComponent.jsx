@@ -1,11 +1,13 @@
+// MapComponent.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from './AuthContext';
 import './map.css';
 import {
   GoogleMap,
   Marker,
-  LoadScript,
   DirectionsRenderer,
+  useJsApiLoader,
 } from "@react-google-maps/api";
 
 const containerStyle = {
@@ -14,7 +16,7 @@ const containerStyle = {
 };
 
 const haversineDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371e3; // Earth radius in meters
+  const R = 6371e3;
   const toRad = (deg) => (deg * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
@@ -39,6 +41,10 @@ const MapComponent = () => {
 
   const navigate = useNavigate();
 
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: import.meta.env.VITE_API_KEY,
+  });
+
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -46,7 +52,7 @@ const MapComponent = () => {
           const { latitude, longitude } = position.coords;
           setUserLocation({ lat: latitude, lng: longitude });
         },
-        (error) => {
+        () => {
           alert("Location access denied. Using default coordinates.");
           setUserLocation({ lat: 0, lng: 0 });
         }
@@ -60,21 +66,17 @@ const MapComponent = () => {
     const fetchSpots = async () => {
       try {
         const response = await fetch('http://localhost:5001/api/spots');
-        if (!response.ok) {
-          throw new Error('Failed to fetch spots');
-        }
+        if (!response.ok) throw new Error('Failed to fetch spots');
         const data = await response.json();
         setSpots(data);
         setError(null);
-      } catch (error) {
-        console.error('Error fetching spots:', error);
-        setError(error.message);
-        setSpots([]);
+      } catch (err) {
+        console.error('Error fetching spots:', err);
+        setError(err.message);
       } finally {
         setLoadingSpots(false);
       }
     };
-    
     fetchSpots();
   }, []);
 
@@ -104,8 +106,7 @@ const MapComponent = () => {
             setUserLocation(newLocation);
 
             if (selectedSpot) {
-              const directionsService =
-                new window.google.maps.DirectionsService();
+              const directionsService = new window.google.maps.DirectionsService();
               directionsService.route(
                 {
                   origin: newLocation,
@@ -113,7 +114,7 @@ const MapComponent = () => {
                   travelMode: window.google.maps.TravelMode.WALKING,
                 },
                 (result, status) => {
-                  if (status === window.google.maps.DirectionsStatus.OK) {
+                  if (status === "OK") {
                     setDirections(result);
                   }
                 }
@@ -130,11 +131,7 @@ const MapComponent = () => {
 
   const handleClick = async (spot) => {
     setSelectedSpot(spot);
-    
-    if (!userLocation) {
-      console.error("User location not available");
-      return;
-    }
+    if (!userLocation) return;
 
     try {
       const directionsService = new window.google.maps.DirectionsService();
@@ -146,18 +143,15 @@ const MapComponent = () => {
             travelMode: window.google.maps.TravelMode.DRIVING,
           },
           (result, status) => {
-            if (status === 'OK') {
-              resolve(result);
-            } else {
-              reject(new Error(`Directions request failed: ${status}`));
-            }
+            if (status === "OK") resolve(result);
+            else reject(new Error(`Directions request failed: ${status}`));
           }
         );
       });
-      
+
       setDirections(result);
-    } catch (error) {
-      console.error("Directions error:", error);
+    } catch (err) {
+      console.error("Directions error:", err);
       alert("Failed to get directions. Please try again.");
     }
   };
@@ -166,37 +160,41 @@ const MapComponent = () => {
     (spot.place || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleLogout = () => {
-    // Clear any user session/token here
-    localStorage.removeItem('token'); // Example if using localStorage
+// MapComponent.jsx
+const handleLogout = async () => {
+  try {
+    await fetch('http://localhost:5001/api/logout', {
+      method: 'POST',
+      credentials: 'include'
+    });
+    // Clear frontend
+    localStorage.removeItem('user');
+    // Redirect
     navigate('/');
-  };
+  } catch (err) {
+    localStorage.removeItem('user');
+    navigate('/');
+  }
+};
 
-  const handleViewTickets = () => {
-    navigate('/my-tickets');
-  };
+  const handleViewTickets = () => navigate('/my-tickets');
+  const { logout } = useAuth(); 
+  if (!isLoaded) return <div>Loading map...</div>;
 
   return (
     <div className="map-container">
       <div className="app-header">
         <h1 className="app-title">Parking Spot Finder</h1>
-        
-        {/* User menu button */}
-        <div className="user-menu-container">
-          <button 
-            className="user-menu-button"
-            onClick={() => setShowMenu(!showMenu)}
-          >
-            ☰
-          </button>
-          
-          {showMenu && (
-            <div className="user-menu-dropdown">
-              <button onClick={handleViewTickets}>Your Tickets</button>
-              <button onClick={handleLogout}>Logout</button>
-            </div>
-          )}
-        </div>
+        <div style={{ position: "absolute", top: "1rem", right: "2rem", zIndex: 10 }}>
+  <div className="dropdown">
+    <button className="dropbtn">☰</button>
+    <div className="dropdown-content">
+      <button onClick={() => navigate("/your-ticket")}>Your Ticket</button>
+      <button onClick={logout}>Logout</button>
+      </div>
+  </div>
+</div>
+
       </div>
 
       <input
@@ -209,30 +207,28 @@ const MapComponent = () => {
 
       <div className="map-content-container">
         <div className="map-wrapper">
-          <LoadScript googleMapsApiKey={import.meta.env.VITE_API_KEY}>
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={userLocation || { lat: 0, lng: 0 }}
-              zoom={15}
-            >
-              {userLocation && (
-                <Marker
-                  position={userLocation}
-                  icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                  label="You"
-                />
-              )}
-              {filteredSpots.map((spot) => (
-                <Marker
-                  key={spot.id}
-                  position={{ lat: spot.lat, lng: spot.lng }}
-                  label={spot.place}
-                  onClick={() => handleClick(spot)}
-                />
-              ))}
-              {directions && <DirectionsRenderer directions={directions} />}
-            </GoogleMap>
-          </LoadScript>
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={userLocation || { lat: 0, lng: 0 }}
+            zoom={15}
+          >
+            {userLocation && (
+              <Marker
+                position={userLocation}
+                icon="http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                label="You"
+              />
+            )}
+            {filteredSpots.map((spot) => (
+              <Marker
+                key={spot.id}
+                position={{ lat: spot.lat, lng: spot.lng }}
+                label={spot.place}
+                onClick={() => handleClick(spot)}
+              />
+            ))}
+            {directions && <DirectionsRenderer directions={directions} />}
+          </GoogleMap>
         </div>
 
         <div className="map-sidebar">
@@ -270,7 +266,6 @@ const MapComponent = () => {
                     if (!userLocation) return alert("User location not available");
 
                     const directionsService = new window.google.maps.DirectionsService();
-
                     directionsService.route(
                       {
                         origin: userLocation,
@@ -286,7 +281,7 @@ const MapComponent = () => {
                               address: leg.end_address,
                               distance: leg.distance.text,
                               duration: leg.duration.text,
-                              amountPerHour: spot.amount_per_hour   
+                              amountPerHour: spot.amount_per_hour
                             }
                           });
                         } else {
