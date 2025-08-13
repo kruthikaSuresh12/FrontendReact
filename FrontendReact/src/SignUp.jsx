@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
+import { useAuth } from './AuthContext';
 
 function SignupForm() {
   const [formData, setFormData] = useState({
@@ -15,7 +16,6 @@ function SignupForm() {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,10 +25,13 @@ function SignupForm() {
     }));
   };
 
+const { login } = useAuth(); // ✅ Add this
+const navigate = useNavigate();
+
 const handleSubmit = async (e) => {
   e.preventDefault();
   setError('');
-  
+
   // Client-side validation
   if (formData.password !== formData.confirm_password) {
     setError("Passwords don't match!");
@@ -40,7 +43,7 @@ const handleSubmit = async (e) => {
   }
 
   setIsLoading(true);
-  
+
   try {
     const response = await fetch('http://localhost:5001/api/signup', {
       method: 'POST',
@@ -51,13 +54,13 @@ const handleSubmit = async (e) => {
       body: JSON.stringify(formData)
     });
 
-    const data = await response.json();
-    
+    const data = await response.json(); // ✅ Only once
+
     if (response.ok) {
-  const data = await response.json();
-  login(data.user, data.token); // ✅ Save user + token
-  navigate('/Mapcomponent');
-}else {
+      // ✅ Use `data` directly — no second json()
+      login(data.user, data.token); // ✅ Save user + token
+      navigate('/Mapcomponent');
+    } else {
       throw new Error(data.error || 'Registration failed');
     }
   } catch (error) {
