@@ -5,7 +5,7 @@ body {
 }
 
 .form-container {
-  background: linear-gradient(to bottom right, #7f00ff, #e100ff);
+  background: #374151;
   color: white;
   padding: 2rem;
   width: 700%;
@@ -14,6 +14,7 @@ body {
   margin: auto;
   margin-top: 2rem;
   box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+  margin-right: 30rem;
 }
 
 .form-container h2 {

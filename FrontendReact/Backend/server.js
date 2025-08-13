@@ -53,8 +53,7 @@ app.use(cors({
 
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use('/api', ticketSlotRoutes);
-app.use('/api', bookTicketRoutes);
+
 
 // Token cleanup scheduler
 setInterval(async () => {
@@ -65,6 +64,29 @@ setInterval(async () => {
     console.error('Token cleanup error:', err);
   }
 }, 3600000); // Runs hourly
+
+// Middleware to protect admin routes
+const authenticateAdmin = (req, res, next) => {
+  let token = req.cookies.admin_token;
+
+  if (!token) {
+    return res.status(401).json({ error: 'No admin token found' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    req.admin = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+};
+
+app.use('/api', ticketSlotRoutes);
+app.use('/api', bookTicketRoutes);
 
 // Enhanced authentication middleware
 const authenticate = async (req, res, next) => {
@@ -115,6 +137,32 @@ const authenticate = async (req, res, next) => {
     res.status(401).json({ error: 'Unauthorized - Invalid session' });
   }
 };
+
+app.post('/api/admin-login', async (req, res) => {
+  const { username, password } = req.body;
+
+  // Hardcoded admin credentials (you can move to DB later)
+  if (username === 'webadddel' && password === 'adddel123') {
+    const token = jwt.sign(
+      { role: 'admin', username },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // Set cookie
+    res.cookie('admin_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 3600000,
+      sameSite: 'lax',
+      path: '/'
+    });
+
+    return res.json({ success: true, message: 'Login successful' });
+  }
+
+  return res.status(401).json({ success: false, error: 'Invalid credentials' });
+});
 
 
 // User Registration
@@ -307,64 +355,64 @@ app.get('/api/user-tickets', authenticate, async (req, res) => {
   }
 });
 
-app.post('/api/book-ticket', authenticate, async (req, res) => {
-  try {
-    const {
-      carNumber,
-      license,
-      startTime,
-      endTime,
-      driverName,
-      customerPhone,
-      date,
-      ownerName,
-      ownerPhone,
-      spotName,
-      spotId
-    } = req.body;
+// app.post('/api/book-ticket', authenticate, async (req, res) => {
+//   try {
+//     const {
+//       carNumber,
+//       license,
+//       startTime,
+//       endTime,
+//       driverName,
+//       customerPhone,
+//       date,
+//       ownerName,
+//       ownerPhone,
+//       spotName,
+//       spotId
+//     } = req.body;
 
-    const userEmail = req.user.emailID;
+//     const userEmail = req.user.emailID;
 
-    const startDateTime = `${date} ${startTime}:00`;
-    const endDateTime = `${date} ${endTime}:00`;
+//     const startDateTime = `${date} ${startTime}:00`;
+//     const endDateTime = `${date} ${endTime}:00`;
 
-    const query = `
-      INSERT INTO ticket_info 
-      (car_number, license, driving_person_name, customer_phnNo, 
-       car_owner_name, owner_phnNo, date, start_time, end_time, 
-       spot_name, spotId, user_email)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+//     const query = `
+//       INSERT INTO ticket_info 
+//       (car_number, license, driving_person_name, customer_phnNo, 
+//        car_owner_name, owner_phnNo, date, start_time, end_time, 
+//        spot_name, spotId, user_email)
+//       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+//     `;
     
-    const [result] = await db.query(query, [
-      carNumber,
-      license || null,
-      driverName || null,
-      customerPhone || null,
-      ownerName || null,
-      ownerPhone || null,
-      date,
-      startDateTime,
-      endDateTime,
-      spotName,
-      spotId || null,
-      userEmail
-    ]);
+//     const [result] = await db.query(query, [
+//       carNumber,
+//       license || null,
+//       driverName || null,
+//       customerPhone || null,
+//       ownerName || null,
+//       ownerPhone || null,
+//       date,
+//       startDateTime,
+//       endDateTime,
+//       spotName,
+//       spotId || null,
+//       userEmail
+//     ]);
 
-    res.json({ 
-      success: true,
-      slotId: result.insertId,
-      message: "Ticket booked successfully"
-    });
+//     res.json({ 
+//       success: true,
+//       slotId: result.insertId,
+//       message: "Ticket booked successfully"
+//     });
 
-  } catch (err) {
-    console.error('Booking error:', err);
-    res.status(500).json({ 
-      error: 'Booking failed',
-      details: err.message 
-    });
-  }
-});
+//   } catch (err) {
+//     console.error('Booking error:', err);
+//     res.status(500).json({ 
+//       error: 'Booking failed',
+//       details: err.message 
+//     });
+//   }
+// });
 
 app.get('/api/verify-token', authenticate, async (req, res) => {
   try {
@@ -538,23 +586,23 @@ app.get('/api/user', authenticate, (req, res) => {
 });
 
 
-// In your backend (e.g., server.js or routes file)
-app.get('/api/user-tickets', async (req, res) => {
-  try {
-    const { email } = req.query;
-    if (!email) {
-      return res.status(400).json({ error: 'Email is required' });
-    }
+// // In your backend (e.g., server.js or routes file)
+// app.get('/api/user-tickets', async (req, res) => {
+//   try {
+//     const { email } = req.query;
+//     if (!email) {
+//       return res.status(400).json({ error: 'Email is required' });
+//     }
 
-    const query = 'SELECT * FROM ticket_info WHERE user_email = ? ORDER BY date DESC, start_time DESC';
-    const [tickets] = await connection.execute(query, [email]);
+//     const query = 'SELECT * FROM ticket_info WHERE user_email = ? ORDER BY date DESC, start_time DESC';
+//     const [tickets] = await connection.execute(query, [email]);
     
-    res.json(tickets);
-  } catch (err) {
-    console.error('Error fetching tickets:', err);
-    res.status(500).json({ error: 'Failed to fetch tickets' });
-  }
-});
+//     res.json(tickets);
+//   } catch (err) {
+//     console.error('Error fetching tickets:', err);
+//     res.status(500).json({ error: 'Failed to fetch tickets' });
+//   }
+// });
 
 // Also update your booking endpoint to include the user email:
 app.post('/api/book-ticket', async (req, res) => {
@@ -581,6 +629,39 @@ app.post('/api/book-ticket', async (req, res) => {
   } catch (err) {
     console.error('Booking error:', err);
     res.status(500).json({ error: 'Booking failed' });
+  }
+});
+
+// Get all spots (for delete page)
+app.get('/api/admin/spots', authenticateAdmin, async (req, res) => {
+  try {
+    const [spots] = await db.query('SELECT place FROM marked_spots');
+    res.json(spots);
+  } catch (err) {
+    console.error('Error fetching spots:', err);
+    res.status(500).json({ error: 'Failed to fetch spots' });
+  }
+});
+
+// Delete a spot
+app.delete('/api/admin/delete-spot', authenticateAdmin, async (req, res) => {
+  const { spotName } = req.body;
+
+  if (!spotName) {
+    return res.status(400).json({ error: 'Spot name is required' });
+  }
+
+  try {
+    const [result] = await db.query('DELETE FROM marked_spots WHERE place = ?', [spotName]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Spot not found' });
+    }
+
+    res.json({ success: true, message: `Spot "${spotName}" deleted successfully` });
+  } catch (err) {
+    console.error('Error deleting spot:', err);
+    res.status(500).json({ error: 'Failed to delete spot' });
   }
 });
 

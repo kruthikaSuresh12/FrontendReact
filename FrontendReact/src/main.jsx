@@ -20,7 +20,10 @@ import ParkingPlaceForm from './ParkingPlaceForm';
 import Ticket from './Ticket';
 import Pay from './pay';
 import YourTicket from './YourTicket';
+import AdminLogin from './AdminLogin'; 
 
+import AdminDashboard from './AdminDashboard';   // Adjust path if needed
+import DeleteSpot from './DeleteSpot';  
 const AppRouter = () => {
   return (
     <BrowserRouter>
@@ -32,6 +35,7 @@ const AppRouter = () => {
           <Route path="/signup" element={<SignupForm />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
           
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
@@ -44,6 +48,9 @@ const AppRouter = () => {
             <Route path="/ticket" element={<Ticket />} />
             <Route path="/pay" element={<Pay />} />
             <Route path="/your-tickets" element={<YourTicket />} />
+            <Route path="/admin-dashboard" element={<AdminDashboard />} />
+            <Route path="/add-spot" element={<ParkingPlaceForm />} />
+            <Route path="/delete-spot" element={<DeleteSpot />} />
           </Route>
         </Routes>
       </AuthProvider>
