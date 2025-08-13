@@ -1,3 +1,4 @@
+//Ticket.jsx
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import './App.css';
@@ -40,7 +41,7 @@ const Ticket = () => {
       <div className="relative w-full max-w-md">
         {/* Back Button */}
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/MapComponent')}
           className="absolute -top-12 left-0 flex items-center text-white hover:text-blue-300 transition-colors"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">

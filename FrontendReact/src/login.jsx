@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from './AuthContext'; // ✅ Import useAuth
 import './App.css';
 
 function Login() {
@@ -10,6 +11,9 @@ function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // ✅ Get login from useAuth
+  const { login } = useAuth();
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -18,37 +22,35 @@ function Login() {
     }));
   };
 
- const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
   setError('');
-
   try {
-    const response = await fetch('http://localhost:5001/api/login', {
+    const res = await fetch('http://localhost:5001/api/login', {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify(formData)
+      body: JSON.stringify({
+        emailID: formData.emailID,
+        password: formData.password
+      })
     });
 
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.error || 'Authentication failed');
-    }
+    const data = await res.json();
+    console.log('Login response:', data);
 
-    localStorage.setItem('user', JSON.stringify(data.user));
-    
-    // Force a page reload to ensure auth context updates
-    window.location.href = '/Mapcomponent';
-    
-  } catch (error) {
-    console.error('Login error:', error);
-    setError(error.message || 'Failed to connect to server. Please try again.');
+    if (res.ok) {
+      // ✅ Save user AND token
+      console.log('Login successful, token:', data.token);
+      login(data.user, data.token); // This should save both
+      navigate('/Mapcomponent');
+    } else {
+      setError(data.error || 'Invalid credentials');
+    }
+  } catch (err) {
+    setError('Failed to connect to server');
   }
 };
-
   return (
     <div className="min-h-screen flex items-center p-4">
       {/* Form Container */}

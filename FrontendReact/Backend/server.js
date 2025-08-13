@@ -1,3 +1,4 @@
+//server.js
 import express from 'express';
 import mysql from 'mysql2/promise';
 import cors from 'cors';
@@ -9,6 +10,8 @@ import cookieParser from 'cookie-parser';
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import ticketSlotRoutes from './ticket_slotServer.js';
+import bookTicketRoutes from './BookTicketServer.js';
+
 
 dotenv.config();
 
@@ -25,16 +28,13 @@ const db = mysql.createPool({
   queueLimit: 0
 });
 
-const generateToken = (user) => {
+function generateToken(user) {
   return jwt.sign(
-    {
-      userId: user.id || user.userID,
-      email: user.emailID
-    },
+    { emailID: user.emailID },
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
   );
-};
+}
 
 // Middleware setup
 const corsOptions = {
@@ -44,10 +44,17 @@ const corsOptions = {
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use('/api', ticketSlotRoutes);
+app.use('/api', bookTicketRoutes);
 
 // Token cleanup scheduler
 setInterval(async () => {
@@ -61,38 +68,42 @@ setInterval(async () => {
 
 // Enhanced authentication middleware
 const authenticate = async (req, res, next) => {
-  const token = req.cookies.token;
-  
-  if (!token) {
-    return res.status(401).json({ 
-      success: false,
-      error: 'Unauthorized - No token provided' 
-    });
-  }
-
   try {
-    // JWT verification
+    // Check for token in cookies first
+    let token = req.cookies.token;
+    
+    // If not in cookies, check Authorization header
+    if (!token && req.headers.authorization) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized - No token provided' });
+    }
+
+    console.log('Cookies:', req.cookies);
+    console.log('Auth Header:', req.headers.authorization);
+
+    // Verify JWT
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const emailID = decoded.emailID;
     
-    // Database token validation
+    // Check if token exists in database
     const [tokens] = await db.query(
-      `SELECT * FROM user_tokens 
-       WHERE token = ? 
-       AND token_type = 'auth' 
-       AND expires_at > NOW() 
-       AND emailID = ?`,
-      [token, decoded.email]
+      'SELECT * FROM user_tokens WHERE token = ? AND expires_at > NOW()',
+      [token]
     );
-    
+
     if (!tokens.length) {
       throw new Error('Invalid or expired token');
     }
 
+    // Get user data
     const [users] = await db.query(
       'SELECT * FROM login WHERE emailID = ?', 
-      [decoded.email]
+      [decoded.emailID]
     );
-    
+
     if (!users.length) {
       throw new Error('User not found');
     }
@@ -100,24 +111,8 @@ const authenticate = async (req, res, next) => {
     req.user = users[0];
     next();
   } catch (err) {
-    // Cleanup invalid token
-    try {
-      await db.query('DELETE FROM user_tokens WHERE token = ?', [token]);
-    } catch (dbErr) {
-      console.error('Token cleanup failed:', dbErr);
-    }
-
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/'
-    });
-    
-    return res.status(401).json({ 
-      success: false,
-      error: 'Unauthorized - Invalid session' 
-    });
+    console.error('Authentication error:', err);
+    res.status(401).json({ error: 'Unauthorized - Invalid session' });
   }
 };
 
@@ -173,7 +168,7 @@ app.post('/api/signup', async (req, res) => {
       // Set cookie
       res.cookie('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: false,
         maxAge: 3600000,
         sameSite: 'lax',
         path: '/'
@@ -181,7 +176,8 @@ app.post('/api/signup', async (req, res) => {
 
       return res.status(201).json({
         success: true,
-        user: newUser
+        user: newUser,
+        token: token
       });
 
     } catch (err) {
@@ -263,7 +259,8 @@ app.post('/api/login', async (req, res) => {
         age: user.age,
         mobNo: user.mobNo,
         gender: user.gender
-      }
+      },
+      token: token
     });
 
   } catch (error) {
@@ -286,86 +283,98 @@ app.get('/api/spots', async (req, res) => {
   }
 });
 
-// Add this to server.js before the error handling middleware
 
 // Book Ticket Endpoint
-// Book Ticket Endpoint - Place this before the error handling middleware
-app.post('/api/book-ticket', authenticate, async (req, res) => {
-  const {
-    carNumber,
-    license,
-    startTime,
-    endTime,
-    driverName,
-    customerPhone,
-    date,
-    ownerName,
-    ownerPhone,
-    spotName,
-  } = req.body;
 
+app.get('/api/user-tickets', authenticate, async (req, res) => {
   try {
-    // Combine date and time
+    const userEmail = req.user.emailID; 
+    const [tickets] = await db.query(
+      `SELECT * FROM ticket_info 
+       WHERE user_email = ? 
+       ORDER BY date DESC, start_time DESC`,
+      [userEmail]
+    );
+    res.json(tickets);
+  } catch (err) {
+    console.error('Error fetching tickets:', err);
+    res.status(500).json({ 
+      error: 'Failed to fetch tickets',
+      details: err.message 
+    });
+  }
+});
+
+app.post('/api/book-ticket', authenticate, async (req, res) => {
+  try {
+    const {
+      carNumber,
+      license,
+      startTime,
+      endTime,
+      driverName,
+      customerPhone,
+      date,
+      ownerName,
+      ownerPhone,
+      spotName,
+      spotId
+    } = req.body;
+
+    const userEmail = req.user.emailID;
+
     const startDateTime = `${date} ${startTime}:00`;
     const endDateTime = `${date} ${endTime}:00`;
 
-    // First check if the spot exists
-    const [spot] = await db.query(
-      'SELECT id FROM marked_spots WHERE place = ? LIMIT 1',
-      [spotName]
-    );
+    const query = `
+      INSERT INTO ticket_info 
+      (car_number, license, driving_person_name, customer_phnNo, 
+       car_owner_name, owner_phnNo, date, start_time, end_time, 
+       spot_name, spotId, user_email)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    const [result] = await db.query(query, [
+      carNumber,
+      license || null,
+      driverName || null,
+      customerPhone || null,
+      ownerName || null,
+      ownerPhone || null,
+      date,
+      startDateTime,
+      endDateTime,
+      spotName,
+      spotId || null,
+      userEmail
+    ]);
 
-    if (!spot.length) {
-      return res.status(400).json({ 
-        error: "Parking spot not found" 
-      });
-    }
-
-    const spotId = spot[0].id;
-
-    // Check for overlapping bookings
-    const [existingBookings] = await db.query(
-      `SELECT * FROM ticket_info 
-       WHERE spotId = ? AND date = ?
-       AND (
-         (start_time < ? AND end_time > ?) OR
-         (start_time >= ? AND start_time < ?)
-       )`,
-      [spotId, date, endDateTime, startDateTime, startDateTime, endDateTime]
-    );
-
-    if (existingBookings.length > 0) {
-      return res.status(400).json({ 
-        error: "This spot is already booked for the selected time" 
-      });
-    }
-
-    // Insert ticket info
-    const [result] = await db.query(
-      `INSERT INTO ticket_info (
-        car_number, license, driving_person_name,
-        customer_phnNo, car_owner_name, owner_phnNo,
-        date, start_time, end_time, spot_name, spotId
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        carNumber, license, driverName,
-        customerPhone, ownerName, ownerPhone,
-        date, startDateTime, endDateTime, spotName, spotId
-      ]
-    );
-
-    return res.json({ 
+    res.json({ 
       success: true,
-      slotId: spotId,
+      slotId: result.insertId,
       message: "Ticket booked successfully"
     });
 
-  } catch (error) {
-    console.error('Ticket booking error:', error);
-    return res.status(500).json({ 
-      error: "Server error during booking",
-      details: error.message 
+  } catch (err) {
+    console.error('Booking error:', err);
+    res.status(500).json({ 
+      error: 'Booking failed',
+      details: err.message 
     });
+  }
+});
+
+app.get('/api/verify-token', authenticate, async (req, res) => {
+  try {
+    res.json({
+      id: req.user.id,
+      name: req.user.name,
+      emailID: req.user.emailID,
+      // ... other user fields you want to expose
+    });
+  } catch (err) {
+    console.error('Token verification error:', err);
+    res.status(500).json({ error: 'Token verification failed' });
   }
 });
 
@@ -524,6 +533,53 @@ app.get('/api/user', authenticate, (req, res) => {
       gender: req.user.gender
     }
   });
+});
+
+
+// In your backend (e.g., server.js or routes file)
+app.get('/api/user-tickets', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const query = 'SELECT * FROM ticket_info WHERE user_email = ? ORDER BY date DESC, start_time DESC';
+    const [tickets] = await connection.execute(query, [email]);
+    
+    res.json(tickets);
+  } catch (err) {
+    console.error('Error fetching tickets:', err);
+    res.status(500).json({ error: 'Failed to fetch tickets' });
+  }
+});
+
+// Also update your booking endpoint to include the user email:
+app.post('/api/book-ticket', async (req, res) => {
+  try {
+    const { 
+      // ... other fields
+      userEmail 
+    } = req.body;
+
+    const query = `
+      INSERT INTO ticket_info 
+      (car_number, license, driving_person_name, customer_phnNo, 
+       car_owner_name, owner_phnNo, date, start_time, end_time, 
+       spot_name, spotId, user_email)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    const [result] = await connection.execute(query, [
+      // ... other values
+      userEmail
+    ]);
+    
+    res.json({ success: true, slotId: result.insertId });
+  } catch (err) {
+    console.error('Booking error:', err);
+    res.status(500).json({ error: 'Booking failed' });
+  }
 });
 
 // Error handling

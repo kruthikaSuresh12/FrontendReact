@@ -1,3 +1,4 @@
+//authContext.jsx
 import { createContext, useState, useEffect, useContext } from 'react';
 
 export const AuthContext = createContext();
@@ -6,73 +7,87 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('http://localhost:5001/api/user', {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Authentication check failed');
-      }
-      
+const checkAuth = async () => {
+  setLoading(true);
+  try {
+    const response = await fetch('http://localhost:5001/api/user', {
+      credentials: 'include', // Ensures cookies are sent
+    });
+    
+    if (response.ok) {
       const data = await response.json();
       setUser(data.user);
       localStorage.setItem('user', JSON.stringify(data.user));
-    } catch (error) {
-      console.error('Auth check error:', error);
-      setUser(null);
-      localStorage.removeItem('user');
-    } finally {
-      setLoading(false);
+    } else {
+      console.warn('Auth check failed:', response.status);
+      // Only clear if 401
+      if (response.status === 401) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        setUser(null);
+      }
     }
-  };
+  } catch (error) {
+    console.error('Auth check error:', error);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setUser(null);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
-    checkAuth();
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
 
-  const login = async (userData) => {
+  const login = async (userData, token) => {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
-    await checkAuth(); // Verify auth status
+    if (token) {
+    localStorage.setItem('token', token); // Save token
+  }
   };
 
   const logout = async () => {
-    try {
-      const response = await fetch('http://localhost:5001/api/logout', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Logout failed');
-      }
-      
-      setUser(null);
-      localStorage.removeItem('user');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+  try {
+    await fetch('http://localhost:5001/api/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } catch (error) {
+    console.error('Logout error:', error);
+  } finally {
+    setUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+  }
+};
+
+
+  const value = { 
+    user, 
+    loading, 
+    login, 
+    logout, 
+    checkAuth 
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      loading, 
-      login, 
-      logout, 
-      checkAuth 
-    }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

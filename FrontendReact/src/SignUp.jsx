@@ -1,3 +1,4 @@
+//SignUp.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
@@ -52,16 +53,13 @@ const handleSubmit = async (e) => {
 
     const data = await response.json();
     
-    if (!response.ok) {
+    if (response.ok) {
+  const data = await response.json();
+  login(data.user, data.token); // ✅ Save user + token
+  navigate('/Mapcomponent');
+}else {
       throw new Error(data.error || 'Registration failed');
     }
-
-    // Store user data
-    localStorage.setItem('user', JSON.stringify(data.user));
-    
-    // Force a page reload to ensure auth context updates
-    window.location.href = '/Mapcomponent';
-    
   } catch (error) {
     console.error('Signup error:', error);
     setError(error.message || 'Failed to connect to server. Please try again.');

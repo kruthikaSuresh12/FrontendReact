@@ -40,7 +40,8 @@ const MapComponent = () => {
   const [showMenu, setShowMenu] = useState(false);
 
   const navigate = useNavigate();
-
+  const { logout } = useAuth();
+  
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_API_KEY,
   });
@@ -160,25 +161,7 @@ const MapComponent = () => {
     (spot.place || "").toLowerCase().includes(search.toLowerCase())
   );
 
-// MapComponent.jsx
-const handleLogout = async () => {
-  try {
-    await fetch('http://localhost:5001/api/logout', {
-      method: 'POST',
-      credentials: 'include'
-    });
-    // Clear frontend
-    localStorage.removeItem('user');
-    // Redirect
-    navigate('/');
-  } catch (err) {
-    localStorage.removeItem('user');
-    navigate('/');
-  }
-};
-
   const handleViewTickets = () => navigate('/my-tickets');
-  const { logout } = useAuth(); 
   if (!isLoaded) return <div>Loading map...</div>;
 
   return (
@@ -188,10 +171,10 @@ const handleLogout = async () => {
         <div style={{ position: "absolute", top: "1rem", right: "2rem", zIndex: 10 }}>
   <div className="dropdown">
     <button className="dropbtn">☰</button>
-    <div className="dropdown-content">
-      <button onClick={() => navigate("/your-ticket")}>Your Ticket</button>
-      <button onClick={logout}>Logout</button>
-      </div>
+<div className="dropdown-content">
+  <button onClick={() => navigate("/your-tickets")}>Your Tickets</button>
+  <button onClick={() => { logout(); navigate('/'); }}>Logout</button>
+</div>
   </div>
 </div>
 
