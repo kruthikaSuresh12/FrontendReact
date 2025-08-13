@@ -87,7 +87,7 @@ const authenticate = async (req, res, next) => {
     // Verify JWT
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const emailID = decoded.emailID;
-    
+
     // Check if token exists in database
     const [tokens] = await db.query(
       'SELECT * FROM user_tokens WHERE token = ? AND expires_at > NOW()',
@@ -292,6 +292,8 @@ app.get('/api/user-tickets', authenticate, async (req, res) => {
     const [tickets] = await db.query(
       `SELECT * FROM ticket_info 
        WHERE user_email = ? 
+         AND (date > CURDATE() OR 
+              (date = CURDATE() AND end_time >= CURRENT_TIME())) 
        ORDER BY date DESC, start_time DESC`,
       [userEmail]
     );
