@@ -42,6 +42,30 @@ const handleSubmit = async (e) => {
     return;
   }
 
+  const password = formData.password;
+const passwordErrors = [];
+
+if (password.length < 8) {
+  passwordErrors.push("at least 8 characters");
+}
+if (!/[a-z]/.test(password)) {
+  passwordErrors.push("one lowercase letter");
+}
+if (!/[A-Z]/.test(password)) {
+  passwordErrors.push("one uppercase letter");
+}
+if (!/[0-9]/.test(password)) {
+  passwordErrors.push("one number");
+}
+if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+  passwordErrors.push("one special character");
+}
+
+if (passwordErrors.length > 0) {
+  setError(`Password must contain: ${passwordErrors.join(', ')}.`);
+  return;
+}
+
   setIsLoading(true);
 
   try {
