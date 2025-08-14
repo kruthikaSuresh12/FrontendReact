@@ -20,10 +20,21 @@ import ParkingPlaceForm from './ParkingPlaceForm';
 import Ticket from './Ticket';
 import Pay from './pay';
 import YourTicket from './YourTicket';
-import AdminLogin from './AdminLogin'; 
+import AdminLogin from './AdminLogin';
+import AdminSpotLogin from './AdminSpotLogin';
+import AdminSpotDashboard from './AdminSpotDashboard';
+import OwnerLogin from './OwnerLogin';
+import OwnerSignup from './OwnerSignup';
+import OwnerBookingPage from './OwnerBookingPage';
 
-import AdminDashboard from './AdminDashboard';   // Adjust path if needed
-import DeleteSpot from './DeleteSpot';  
+// 🔽 NEW: Import newly created pages
+import OwnerTicketDisplay from './OwnerTicketDisplay';  // ← Add this
+import OwnerSeeSlot from './OwnerSeeSlot';              // ← Add this
+
+// Admin & Other
+import AdminDashboard from './AdminDashboard';
+import DeleteSpot from './DeleteSpot';
+
 const AppRouter = () => {
   return (
     <BrowserRouter>
@@ -36,7 +47,8 @@ const AppRouter = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin-login" element={<AdminLogin />} />
-          
+          <Route path="/adminSpot-login" element={<AdminSpotLogin />} />
+
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/Mapcomponent" element={<MapComponent />} />
@@ -51,6 +63,14 @@ const AppRouter = () => {
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/add-spot" element={<ParkingPlaceForm />} />
             <Route path="/delete-spot" element={<DeleteSpot />} />
+
+            {/* Spot Owner Routes */}
+            <Route path="/owner/login" element={<OwnerLogin />} />
+            <Route path="/owner/signup" element={<OwnerSignup />} />
+            <Route path="/owner/book" element={<OwnerBookingPage />} />
+            <Route path="/owner/ticket-display" element={<OwnerTicketDisplay />} />
+            <Route path="/owner/see-slot" element={<OwnerSeeSlot />} />
+            <Route path="/owner/tickets" element={<OwnerSeeSlot />} />
           </Route>
         </Routes>
       </AuthProvider>

@@ -165,6 +165,293 @@ app.post('/api/admin-login', async (req, res) => {
 });
 
 
+// ====== 🔐 ADMIN LOGIN (Hardcoded) ======
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === 'webadddel' && password === 'adddel321') {
+    const token = jwt.sign(
+      { role: 'admin' },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '1h' }
+    );
+
+    res.cookie('admin_token', token, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 3600000,
+      sameSite: 'lax',
+      path: '/'
+    });
+
+    return res.json({ success: true });
+  }
+
+  return res.status(401).json({ error: 'Invalid credentials' });
+});
+
+// ====== 🟢 SPOT OWNER LOGIN ======
+app.post('/api/owner/login', async (req, res) => {
+  const { username, spotName, password } = req.body;
+
+  const [rows] = await db.query('SELECT * FROM spot_owners WHERE username = ?', [username]);
+  if (rows.length === 0) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  const owner = rows[0];
+  const isMatch = await bcrypt.compare(password, owner.password);
+  if (!isMatch) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  // ✅ Generate JWT
+  const token = jwt.sign(
+    { role: 'owner', spotName: owner.spot_name },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h' }
+  );
+
+  // ✅ Send token in response
+  res.json({ success: true, token });
+});
+
+// ====== 🔵 SPOT OWNER SIGNUP ======
+app.post('/api/owner/signup', async (req, res) => {
+  const { username, password, confirmPassword, spotName } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ error: 'Passwords do not match' });
+  }
+
+  // Check if username exists
+  const [existing] = await db.query('SELECT * FROM spot_owners WHERE username = ?', [username]);
+  if (existing.length) {
+    return res.status(409).json({ error: 'Username already taken' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  await db.query(
+    'INSERT INTO spot_owners (username, password, spot_name) VALUES (?, ?, ?)',
+    [username, hashedPassword, spotName]
+  );
+
+  res.json({ success: true, message: 'Signup successful!' });
+});
+
+app.get('/api/owner/slots/:spotName', async (req, res) => {
+  const { spotName } = req.params;
+  const tableName = spotName.toLowerCase();
+
+  console.log('🎯 Incoming spotName:', spotName);
+  console.log('🔧 Normalized tableName:', tableName);
+
+  const query = `SELECT * FROM \`${tableName}\``;
+
+  try {
+    const [results] = await db.query(query); // ✅ Use await
+    console.log('✅ Fetched', results.length, 'slots');
+    res.json(results);
+  } catch (err) {
+    console.error('❌ DB Error:', err.message);
+    return res.status(404).json({
+      error: 'Table not found',
+      table: tableName
+    });
+  }
+});
+
+app.post('/api/owner/see-slot', async (req, res) => {
+  const { spotName, slotId } = req.body;
+
+  if (!spotName || !slotId) {
+    return res.status(400).json({ error: 'Missing spotName or slotId' });
+  }
+
+  const tableName = spotName.toLowerCase();
+
+  try {
+    // 1. Check if slot exists in spot table (e.g., rampura)
+    const [slots] = await db.query(
+      `SELECT * FROM \`${tableName}\` WHERE slotId = ?`,
+      [slotId]
+    );
+
+    if (slots.length === 0) {
+      return res.status(404).json({ error: 'Slot not found' });
+    }
+
+    const slot = slots[0];
+
+    let ticket = null;
+
+    // 2. Check if there's a ticket for this slot
+    // 🔽 Use correct column name: probably 'spotId' or 'slotId'
+    const [tickets] = await db.query(
+      `SELECT car_number, driving_person_name, customer_phnNo, date, start_time, end_time 
+       FROM ticket_info 
+       WHERE spot_name = ? AND spotId = ?`,
+      [spotName, slotId]
+    );
+
+    if (tickets.length > 0) {
+      ticket = tickets[0];
+    }
+
+    res.json({ slot, ticket });
+  } catch (err) {
+    console.error('See slot error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.post('/api/owner/book', async (req, res) => {
+  const { spotName, slotId, carNumber, driverName, customerPhone, startTime, endTime } = req.body;
+
+  // Validate required fields
+  if (!carNumber || !driverName || !customerPhone || !startTime || !endTime) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  const tableName = spotName.toLowerCase();
+  const today = new Date().toISOString().split('T')[0]; // '2025-08-14'
+
+  // ✅ Combine date + time to make full datetime
+  const fullStartTime = `${today} ${startTime}:00`;  // '2025-08-14 20:00:00'
+  const fullEndTime = `${today} ${endTime}:00`;      // '2025-08-14 22:00:00'
+
+  try {
+    // 1. Check if slot is available
+    const [slots] = await db.query(
+      `SELECT * FROM \`${tableName}\` WHERE slotId = ? AND status = 'empty'`,
+      [slotId]
+    );
+
+    if (slots.length === 0) {
+      return res.status(400).json({ error: 'Slot not available' });
+    }
+
+    // 2. Mark slot as booked
+    await db.query(
+      `UPDATE \`${tableName}\` SET status = 'booked' WHERE slotId = ?`,
+      [slotId]
+    );
+
+    // 3. Insert into ticket_info
+    await db.query(
+      `INSERT INTO ticket_info 
+       (car_number, license, driving_person_name, customer_phnNo, 
+        car_owner_name, owner_phnNo, date, start_time, end_time, spot_name, spotId) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        carNumber,
+        null,
+        driverName,
+        customerPhone,
+        null,
+        null,
+        today,           // date (e.g., '2025-08-14')
+        fullStartTime,   // ✅ datetime (e.g., '2025-08-14 20:00:00')
+        fullEndTime,     // ✅ datetime (e.g., '2025-08-14 22:00:00')
+        spotName,
+        slotId
+      ]
+    );
+
+    res.json({ success: true, message: 'Booked successfully' });
+  } catch (err) {
+    console.error('Booking error:', err);
+
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(400).json({ 
+        error: `A ticket with car number ${carNumber} already exists` 
+      });
+    }
+
+    res.status(500).json({ error: 'Failed to book slot' });
+  }
+});
+
+app.post('/api/owner/delete-slot', async (req, res) => {
+  const { spotName, slotId } = req.body;
+
+  // Validate input
+  if (!spotName || !slotId) {
+    return res.status(400).json({ error: 'Missing spotName or slotId' });
+  }
+
+  const tableName = spotName.toLowerCase();
+
+  try {
+    // Update the slot to 'empty'
+    const [result] = await db.query(
+      `UPDATE \`${tableName}\` SET status = 'empty' WHERE slotId = ?`,
+      [slotId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Slot not found or already empty' });
+    }
+
+    res.json({ success: true, message: `Slot ${slotId} marked as empty` });
+  } catch (err) {
+    console.error('Delete error:', err);
+    res.status(500).json({ error: 'Database error' });
+  }
+});
+
+app.get('/api/owner/see-slot/:spotName/:slotId', async (req, res) => {
+  const { spotName, slotId } = req.params;
+
+  // Check slot status
+  const checkSlotQuery = `SELECT * FROM \`${spotName}\` WHERE slotId = ?`;
+  const [slotStatus] = await db.query(checkSlotQuery, [slotId]);
+
+  if (!slotStatus.length) {
+    return res.status(404).json({ error: 'Slot not found' });
+  }
+
+  const slot = slotStatus[0];
+
+  // If booked, fetch ticket details
+  if (slot.status === 'booked') {
+    const getTicketQuery = `SELECT * FROM ticket_info WHERE spot_name = ? AND slotId = ?`;
+    const [ticketDetails] = await db.query(getTicketQuery, [spotName, slotId]);
+    return res.json({ slot, ticket: ticketDetails[0] });
+  }
+
+  res.json({ slot });
+});
+
+app.get('/api/owner/tickets', async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.role !== 'owner') {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const spotName = decoded.spotName;
+
+    const [tickets] = await db.query(
+      'SELECT * FROM ticket_info WHERE spot_name = ? ORDER BY date DESC, start_time DESC LIMIT 10',
+      [spotName]
+    );
+
+    res.json(tickets);
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+});
+
+
 // User Registration
 app.post('/api/signup', async (req, res) => {
   try {

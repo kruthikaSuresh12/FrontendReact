@@ -1,0 +1,35 @@
+.owner-signup .card,
+.owner-login .card {
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+  text-align: center;
+  margin-right: 35rem;
+}
+
+.owner-signup input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.owner-signup button {
+  width: 100%;
+  padding: 12px;
+  background: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.error { color: #e74c3c; font-size: 0.9rem; }
+.success { color: #27ae60; font-size: 0.9rem; }

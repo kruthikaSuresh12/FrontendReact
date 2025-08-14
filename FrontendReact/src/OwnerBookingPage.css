@@ -1,0 +1,101 @@
+.booking-page {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  margin-left: -30rem;
+  margin-right: 0rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.actions button {
+  margin-left: 10px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.btn-view { background-color: #17a2b8; color: white; }
+.btn-delete { background-color: #dc3545; color: white; }
+.btn-logout { background-color: #6c757d; color: white; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-section input, .form-section select {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-book {
+  background-color: #28a745;
+  color: white;
+  padding: 12px;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.slot {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.slot.empty {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.slot.booked {
+  background-color: #f8d7da;
+  color: #721c24;
+  cursor: not-allowed;
+}
+
+.error { color: red; }
+.success { color: green; }
+
+.delete-slot-section {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.delete-slot-section input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.btn-delete-small {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}

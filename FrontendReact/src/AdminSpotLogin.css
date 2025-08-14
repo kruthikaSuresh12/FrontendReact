@@ -1,0 +1,53 @@
+.admin-login {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  margin-right: 30rem;
+}
+
+.card {
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 350px;
+  text-align: center;
+}
+
+.card h2 {
+  margin-bottom: 20px;
+  color: #f3ecec;
+}
+
+.card input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.card button {
+  width: 100%;
+  padding: 12px;
+  background: #1877f2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.card button:hover {
+  background: #166fe5;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin: 10px 0;
+}

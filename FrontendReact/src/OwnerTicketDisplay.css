@@ -1,0 +1,60 @@
+/* src/OwnerTicketDisplay.css */
+.ticket-display {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  margin-right: 30rem;
+}
+
+.ticket-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 2px solid #007bff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.ticket-details {
+  margin: 20px 0;
+  line-height: 1.8;
+}
+
+.ticket-details p {
+  margin: 10px 0;
+  font-size: 16px;
+}
+
+.error {
+  color: red;
+  text-align: center;
+}
+
+.ticket-actions {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.ticket-actions button {
+  padding: 10px 20px;
+  margin: 0 10px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+}
+
+.btn-print {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-back {
+  background-color: #6c757d;
+  color: white;
+}
+
+@media print {
+  .ticket-actions {
+    display: none;
+  }
+}
