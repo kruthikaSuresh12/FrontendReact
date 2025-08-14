@@ -242,23 +242,18 @@ app.post('/api/owner/signup', async (req, res) => {
 
 app.get('/api/owner/slots/:spotName', async (req, res) => {
   const { spotName } = req.params;
-  const tableName = spotName.toLowerCase();
 
-  console.log('🎯 Incoming spotName:', spotName);
-  console.log('🔧 Normalized tableName:', tableName);
+  // ✅ Convert spaces to underscores and lowercase
+  const tableName = spotName.toLowerCase().replace(/\s+/g, '_');
 
-  const query = `SELECT * FROM \`${tableName}\``;
+  console.log('Fetching from table:', tableName); // 🔍 Debug
 
   try {
-    const [results] = await db.query(query); // ✅ Use await
-    console.log('✅ Fetched', results.length, 'slots');
+    const [results] = await db.query(`SELECT * FROM \`${tableName}\``);
     res.json(results);
   } catch (err) {
-    console.error('❌ DB Error:', err.message);
-    return res.status(404).json({
-      error: 'Table not found',
-      table: tableName
-    });
+    console.error('Table not found:', tableName);
+    return res.status(404).json({ error: 'Spot not found' });
   }
 });
 
@@ -269,7 +264,7 @@ app.post('/api/owner/see-slot', async (req, res) => {
     return res.status(400).json({ error: 'Missing spotName or slotId' });
   }
 
-  const tableName = spotName.toLowerCase();
+  const tableName = spotName.toLowerCase().replace(/\s+/g, '_');
 
   try {
     // 1. Check if slot exists in spot table (e.g., rampura)
@@ -309,20 +304,13 @@ app.post('/api/owner/see-slot', async (req, res) => {
 app.post('/api/owner/book', async (req, res) => {
   const { spotName, slotId, carNumber, driverName, customerPhone, startTime, endTime } = req.body;
 
-  // Validate required fields
-  if (!carNumber || !driverName || !customerPhone || !startTime || !endTime) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  const tableName = spotName.toLowerCase();
-  const today = new Date().toISOString().split('T')[0]; // '2025-08-14'
-
-  // ✅ Combine date + time to make full datetime
-  const fullStartTime = `${today} ${startTime}:00`;  // '2025-08-14 20:00:00'
-  const fullEndTime = `${today} ${endTime}:00`;      // '2025-08-14 22:00:00'
+  // ✅ Normalize table name
+  const tableName = spotName.toLowerCase().replace(/\s+/g, '_');
+  const today = new Date().toISOString().split('T')[0];
+  const fullStartTime = `${today} ${startTime}:00`;
+  const fullEndTime = `${today} ${endTime}:00`;
 
   try {
-    // 1. Check if slot is available
     const [slots] = await db.query(
       `SELECT * FROM \`${tableName}\` WHERE slotId = ? AND status = 'empty'`,
       [slotId]
@@ -332,44 +320,23 @@ app.post('/api/owner/book', async (req, res) => {
       return res.status(400).json({ error: 'Slot not available' });
     }
 
-    // 2. Mark slot as booked
-    await db.query(
-      `UPDATE \`${tableName}\` SET status = 'booked' WHERE slotId = ?`,
-      [slotId]
-    );
+    await db.query(`UPDATE \`${tableName}\` SET status = 'booked' WHERE slotId = ?`, [slotId]);
 
-    // 3. Insert into ticket_info
     await db.query(
       `INSERT INTO ticket_info 
        (car_number, license, driving_person_name, customer_phnNo, 
         car_owner_name, owner_phnNo, date, start_time, end_time, spot_name, spotId) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        carNumber,
-        null,
-        driverName,
-        customerPhone,
-        null,
-        null,
-        today,           // date (e.g., '2025-08-14')
-        fullStartTime,   // ✅ datetime (e.g., '2025-08-14 20:00:00')
-        fullEndTime,     // ✅ datetime (e.g., '2025-08-14 22:00:00')
-        spotName,
-        slotId
+        carNumber, null, driverName, customerPhone, null, null,
+        today, fullStartTime, fullEndTime, spotName, slotId
       ]
     );
 
-    res.json({ success: true, message: 'Booked successfully' });
+    res.json({ success: true });
   } catch (err) {
     console.error('Booking error:', err);
-
-    if (err.code === 'ER_DUP_ENTRY') {
-      return res.status(400).json({ 
-        error: `A ticket with car number ${carNumber} already exists` 
-      });
-    }
-
-    res.status(500).json({ error: 'Failed to book slot' });
+    res.status(500).json({ error: 'Failed to book' });
   }
 });
 
@@ -381,7 +348,7 @@ app.post('/api/owner/delete-slot', async (req, res) => {
     return res.status(400).json({ error: 'Missing spotName or slotId' });
   }
 
-  const tableName = spotName.toLowerCase();
+  const tableName = spotName.toLowerCase().replace(/\s+/g, '_');
 
   try {
     // Update the slot to 'empty'

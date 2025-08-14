@@ -17,37 +17,40 @@ const OwnerSignup = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+  setSuccess('');
 
-    if (formData.password !== formData.confirmPassword) {
-      return setError('Passwords do not match');
+  if (formData.password !== formData.confirmPassword) {
+    return setError('Passwords do not match');
+  }
+
+  try {
+    const response = await fetch('http://localhost:5001/api/owner/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: formData.username,
+        spotName: formData.spotName.toLowerCase(), // ✅ Fixed
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setSuccess('Signup successful! Please login.');
+      setTimeout(() => navigate('/owner/login'), 1500);
+    } else {
+      setError(data.error);
     }
-
-    try {
-      const response = await fetch('http://localhost:5001/api/owner/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({username,
-    spotName: spotName.toLowerCase(), // ✅
-    password,
-    confirmPassword})
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccess('Signup successful! Please login.');
-        setTimeout(() => navigate('/owner/login'), 1500);
-      } else {
-        setError(data.error);
-      }
-    } catch (err) {
-      setError('Server error. Try again.');
-    }
-  };
+  } catch (err) {
+    console.error('Signup error:', err); // 🔍 Debug
+    setError('Server error. Try again.');
+  }
+};
 
   return (
     <div className="owner-signup">

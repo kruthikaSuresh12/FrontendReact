@@ -14,10 +14,12 @@ const OwnerLogin = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+const [loading, setLoading] = useState(false);
 
 const handleSubmit = async (e) => {
   e.preventDefault();
   setError('');
+  setLoading(true);
 
   try {
     const response = await fetch('http://localhost:5001/api/owner/login', {
@@ -28,18 +30,18 @@ const handleSubmit = async (e) => {
 
     if (response.ok) {
       const data = await response.json();
-      console.log('Login response:', data); // ← Make sure backend returns token
-
-    localStorage.setItem('spotName', formData.spotName.toLowerCase());
-    localStorage.setItem('ownerToken', data.token);
+      const cleanSpotName = formData.spotName.toLowerCase().replace(/\s+/g, '_');
+      localStorage.setItem('spotName', cleanSpotName);
+      localStorage.setItem('ownerToken', data.token);
       navigate('/owner/book');
-
     } else {
       const errData = await response.json();
       setError(errData.error || 'Invalid credentials');
     }
   } catch (err) {
     setError('Failed to connect');
+  } finally {
+    setLoading(false);
   }
 };
 
