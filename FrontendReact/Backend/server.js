@@ -304,39 +304,62 @@ app.post('/api/owner/see-slot', async (req, res) => {
 app.post('/api/owner/book', async (req, res) => {
   const { spotName, slotId, carNumber, driverName, customerPhone, startTime, endTime } = req.body;
 
-  // ✅ Normalize table name
+  // ✅ Normalize table and spot_name
   const tableName = spotName.toLowerCase().replace(/\s+/g, '_');
+  const normalizedSpotName = tableName; // Use same clean name
   const today = new Date().toISOString().split('T')[0];
   const fullStartTime = `${today} ${startTime}:00`;
   const fullEndTime = `${today} ${endTime}:00`;
 
+  let connection;
+
   try {
-    const [slots] = await db.query(
+    connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    const [slots] = await connection.query(
       `SELECT * FROM \`${tableName}\` WHERE slotId = ? AND status = 'empty'`,
       [slotId]
     );
 
     if (slots.length === 0) {
+      await connection.rollback();
       return res.status(400).json({ error: 'Slot not available' });
     }
 
-    await db.query(`UPDATE \`${tableName}\` SET status = 'booked' WHERE slotId = ?`, [slotId]);
+    await connection.query(
+      `UPDATE \`${tableName}\` SET status = 'booked' WHERE slotId = ?`,
+      [slotId]
+    );
 
-    await db.query(
+    await connection.query(
       `INSERT INTO ticket_info 
        (car_number, license, driving_person_name, customer_phnNo, 
         car_owner_name, owner_phnNo, date, start_time, end_time, spot_name, spotId) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        carNumber, null, driverName, customerPhone, null, null,
-        today, fullStartTime, fullEndTime, spotName, slotId
+        carNumber,
+        null,
+        driverName,
+        customerPhone,
+        null,
+        null,
+        today,
+        fullStartTime,
+        fullEndTime,
+        normalizedSpotName, // ✅ Use clean name
+        slotId
       ]
     );
 
-    res.json({ success: true });
+    await connection.commit();
+    res.json({ success: true, message: 'Booked successfully' });
   } catch (err) {
+    if (connection) await connection.rollback();
     console.error('Booking error:', err);
-    res.status(500).json({ error: 'Failed to book' });
+    res.status(500).json({ error: 'Failed to book slot' });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
@@ -405,7 +428,8 @@ app.get('/api/owner/tickets', async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const spotName = decoded.spotName;
+    // ✅ Use normalized spotName
+    const spotName = decoded.spotName.toLowerCase().replace(/\s+/g, '_');
 
     const [tickets] = await db.query(
       'SELECT * FROM ticket_info WHERE spot_name = ? ORDER BY date DESC, start_time DESC LIMIT 10',
@@ -414,10 +438,10 @@ app.get('/api/owner/tickets', async (req, res) => {
 
     res.json(tickets);
   } catch (err) {
+    console.error('Fetch tickets error:', err);
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 });
-
 
 // User Registration
 app.post('/api/signup', async (req, res) => {
