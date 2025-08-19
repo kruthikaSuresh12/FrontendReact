@@ -16,7 +16,7 @@ const DeleteSpot = () => {
   useEffect(() => {
     const fetchSpots = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/admin/spots', {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/spots`, {
           credentials: 'include',
         });
 
@@ -60,7 +60,7 @@ const DeleteSpot = () => {
     if (!window.confirm(`Are you sure you want to delete "${spotName}"?`)) return;
 
     try {
-      const response = await fetch('http://localhost:5001/api/admin/delete-spot', {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/delete-spot`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
