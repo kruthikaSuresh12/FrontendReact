@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import './YourTicket.css'; // ✅ Import pure CSS
+import './YourTicket.css';
 
 const YourTicket = () => {
   const [tickets, setTickets] = useState([]);
@@ -24,7 +24,7 @@ const YourTicket = () => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
 
-        const response = await fetch('http://localhost:5001/api/user-tickets', {
+        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user-tickets`, {
           method: 'GET',
           credentials: 'include',
           headers: {
