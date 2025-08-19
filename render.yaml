@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: ParkingSystem
+    env: static
+    buildCommand: cd FrontendReact && npm install && npm run build
+    staticPublishPath: FrontendReact/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
