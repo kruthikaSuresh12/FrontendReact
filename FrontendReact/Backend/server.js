@@ -40,7 +40,7 @@ function generateToken(user) {
 
 // Middleware setup
 const corsOptions = {
-  origin: process.env.FRONTEND_URL,
+  origin: "https://parkingsystem-iuq9.onrender.com",
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
