@@ -28,7 +28,7 @@ const OwnerSeeSlot = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5001/api/owner/see-slot', {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/owner/see-slot`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
