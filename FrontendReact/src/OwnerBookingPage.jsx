@@ -32,7 +32,7 @@ const OwnerBookingPage = () => {
 
   const fetchSlots = async () => {
     try {
-      const response = await fetch(`http://localhost:5001/api/owner/slots/${spotName}`, {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/owner/slots/${spotName}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -62,7 +62,7 @@ const OwnerBookingPage = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5001/api/owner/book', {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/owner/book`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ const handleDeleteSlot = async () => {
   }
 
   try {
-    const response = await fetch('http://localhost:5001/api/owner/delete-slot', {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/owner/delete-slot`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ const handleDeleteSlotWithInput = async () => {
   if (!window.confirm(`Delete booking for slot ${slotIdToDelete}?`)) return;
 
   try {
-    const response = await fetch('http://localhost:5001/api/owner/delete-slot', {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/owner/delete-slot`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
