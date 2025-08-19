@@ -75,7 +75,7 @@ const ParkingPlaceForm = () => {
   }
 
   try {
-    const response = await fetch('http://localhost:5001/api/submit-parking-info', {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/submit-parking-info`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),
