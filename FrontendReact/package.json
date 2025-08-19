@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "node Backend/server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
