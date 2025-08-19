@@ -11,6 +11,7 @@ import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import ticketSlotRoutes from './ticket_slotServer.js';
 import bookTicketRoutes from './BookTicketServer.js';
+import db from './db.js';
 
 
 dotenv.config();
@@ -19,10 +20,11 @@ const app = express();
 
 // Database connection pool
 const db = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'kruthi@1234',
-  database: process.env.DB_NAME || 'parking',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  port: process.env.DB_PORT,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -38,14 +40,14 @@ function generateToken(user) {
 
 // Middleware setup
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
