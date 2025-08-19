@@ -11,7 +11,6 @@ import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import ticketSlotRoutes from './ticket_slotServer.js';
 import bookTicketRoutes from './BookTicketServer.js';
-import db from './db.js';
 
 
 dotenv.config();
