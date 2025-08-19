@@ -22,7 +22,7 @@ const handleSubmit = async (e) => {
   setLoading(true);
 
   try {
-    const response = await fetch('http://localhost:5001/api/owner/login', {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/owner/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
