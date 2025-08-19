@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from './AuthContext'; // ✅ Import useAuth
+import { useAuth } from './AuthContext';
 import './App.css';
 
 function Login() {
@@ -26,7 +26,7 @@ const handleSubmit = async (e) => {
   e.preventDefault();
   setError('');
   try {
-    const res = await fetch('http://localhost:5001/api/login', {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
