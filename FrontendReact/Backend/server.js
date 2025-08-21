@@ -46,7 +46,7 @@ const corsOptions = {
 };
 
 app.use(cors({
-  origin: "*",
+  origin: "https://parkingsystem-iuq9.onrender.com",
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
