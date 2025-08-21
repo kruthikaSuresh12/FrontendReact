@@ -54,6 +54,7 @@ app.use(cors({
 
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(cors());
 
 
 // Token cleanup scheduler
