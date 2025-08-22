@@ -15,26 +15,37 @@ const DeleteSpot = () => {
   // Fetch spots on mount
   useEffect(() => {
     const fetchSpots = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/spots`, {
-          credentials: 'include',
-        });
-
-        if (response.status === 401) {
-          alert('Session expired. Please log in again.');
-          return navigate('/admin-login');
-        }
-
-        const data = await response.json();
-        const spotNames = data.map(s => s.place);
-        setSpots(spotNames);
-        setFilteredSpots(spotNames); // Initially show all
-      } catch (err) {
-        setError('Failed to load spots');
-      } finally {
-        setLoading(false);
+  try {
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/admin/spots`, {
+      method: 'GET',
+      credentials: 'include', // ← Must be included
+      headers: {
+        'Content-Type': 'application/json',
       }
-    };
+    });
+
+    console.log('Response status:', response.status);
+
+    if (response.status === 401) {
+      alert('Session expired or not logged in. Please log in again.');
+      return navigate('/admin-login');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch spots');
+    }
+
+    const data = await response.json();
+    const spotNames = data.map(s => s.place);
+    setSpots(spotNames);
+    setFilteredSpots(spotNames);
+  } catch (err) {
+    console.error('Fetch error:', err);
+    setError('Failed to load spots');
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchSpots();
   }, [navigate]);
