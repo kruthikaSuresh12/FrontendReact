@@ -167,21 +167,21 @@ app.post('/api/admin-login', async (req, res) => {
 
 
 // ====== 🔐 ADMIN LOGIN (Hardcoded) ======
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', async (req, res) => {
   const { username, password } = req.body;
 
-  if (username === 'webadddel' && password === 'adddel321') {
+  if (username === 'webadddel' && password === 'adddel123') {
     const token = jwt.sign(
-      { role: 'admin' },
-      process.env.JWT_SECRET || 'your-secret-key',
+      { role: 'admin', username },
+      process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
     res.cookie('admin_token', token, {
       httpOnly: true,
-      secure: false,
+      secure: true,        // ← for HTTPS
+      sameSite: 'lax',     // or 'none' if cross-origin
       maxAge: 3600000,
-      sameSite: 'lax',
       path: '/'
     });
 
