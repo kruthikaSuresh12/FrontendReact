@@ -179,8 +179,8 @@ app.post('/api/admin/login', async (req, res) => {
 
     res.cookie('admin_token', token, {
       httpOnly: true,
-      secure: true,        // ← for HTTPS
-      sameSite: 'lax',     // or 'none' if cross-origin
+      secure: true,
+      sameSite: 'none',
       maxAge: 3600000,
       path: '/'
     });
@@ -495,7 +495,7 @@ app.post('/api/signup', async (req, res) => {
       // Set cookie
       res.cookie('token', token, {
         httpOnly: true,
-        secure: false,
+        secure: true,
         maxAge: 3600000,
         sameSite: 'none',
         path: '/'
@@ -573,7 +573,7 @@ app.post('/api/login', async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 3600000,
-      sameSite: 'lax',
+      sameSite: 'none',
       path: '/'
     });
 
@@ -832,7 +832,7 @@ app.post('/api/logout', authenticate, async (req, res) => {
     res.clearCookie('token', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       path: '/'
     });
 
@@ -913,6 +913,7 @@ app.post('/api/book-ticket', async (req, res) => {
 
 // Get all spots (for delete page)
 app.get('/api/admin/spots', authenticateAdmin, async (req, res) => {
+    console.log('✅ Admin authenticated:', req.admin);
   try {
     const [spots] = await db.query('SELECT place FROM marked_spots');
     res.json(spots);
