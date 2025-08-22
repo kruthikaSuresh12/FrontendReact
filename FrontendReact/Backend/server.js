@@ -497,7 +497,7 @@ app.post('/api/signup', async (req, res) => {
         httpOnly: true,
         secure: false,
         maxAge: 3600000,
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/'
       });
 
@@ -923,21 +923,26 @@ app.get('/api/admin/spots', authenticateAdmin, async (req, res) => {
 });
 
 // Delete a spot
-app.delete("/api/delete-spot", authenticateAdmin, async (req, res) => {
+app.delete('/api/admin/delete-spot', authenticateAdmin, async (req, res) => {
   const { spotName } = req.body;
 
   if (!spotName) {
-    return res.status(400).json({ error: "Spot name required" });
+    return res.status(400).json({ error: 'Spot name is required' });
   }
 
   try {
-    await db.query("DELETE FROM parking_spots WHERE name = ?", [spotName]);
-    res.json({ message: "Spot deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: "Database error" });
+    const [result] = await db.query('DELETE FROM marked_spots WHERE place = ?', [spotName]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Spot not found' });
+    }
+
+    res.json({ success: true, message: `Spot "${spotName}" deleted successfully` });
+  } catch (err) {
+    console.error('Error deleting spot:', err);
+    res.status(500).json({ error: 'Failed to delete spot' });
   }
 });
-
 
 // Error handling
 app.use((err, req, res, next) => {
