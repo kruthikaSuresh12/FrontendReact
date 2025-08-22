@@ -924,7 +924,7 @@ app.get('/api/admin/spots', authenticateAdmin, async (req, res) => {
 });
 
 // Delete a spot
-app.delete('/api/admin/delete-spot', authenticateAdmin, async (req, res) => {
+app.delete('/api/admin/delete-spot', authenticate, async (req, res) => {
   const { spotName } = req.body;
 
   if (!spotName) {
