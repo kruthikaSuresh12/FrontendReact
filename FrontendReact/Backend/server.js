@@ -160,12 +160,13 @@ app.post('/api/admin-login', async (req, res) => {
 
     // Set cookie
     res.cookie('admin_token', token, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 3600000,
-      sameSite: 'lax',
-      path: '/'
-    });
+  httpOnly: true,
+  secure: true,           // ← Must be true for HTTPS (Render uses HTTPS)
+  sameSite: 'none',       // ← Required to work across domains: frontend (parkingsystem...) → backend (frontendreact...)
+  maxAge: 3600000,        // 1 hour
+  path: '/',              // Available site-wide
+  domain: 'frontendreact-2.onrender.com' // ← Optional, but helps clarity
+});
 
     return res.json({ success: true, message: 'Login successful' });
   }
