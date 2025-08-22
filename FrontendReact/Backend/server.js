@@ -143,7 +143,7 @@ app.post('/api/admin-login', async (req, res) => {
   const { username, password } = req.body;
 
   // Hardcoded admin credentials (you can move to DB later)
-  if (username === 'webadddel' && password === 'adddel123') {
+  if (username === 'webadddel' && password === 'adddel321') {
     const token = jwt.sign(
       { role: 'admin', username },
       process.env.JWT_SECRET,
