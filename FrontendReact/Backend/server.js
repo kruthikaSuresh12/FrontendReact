@@ -68,9 +68,15 @@ setInterval(async () => {
 
 // Middleware to protect admin routes
 const authenticateAdmin = (req, res, next) => {
+  console.log('🔍 Request Cookies:', req.cookies);
+  console.log('🔍 Authorization Header:', req.headers.authorization);
+  console.log('🔍 Origin:', req.headers.origin);
+  console.log('🔍 Host:', req.headers.host);
+
   let token = req.cookies.admin_token;
 
   if (!token) {
+    console.log('❌ No admin_token cookie found');
     return res.status(401).json({ error: 'No admin token found' });
   }
 
@@ -80,8 +86,10 @@ const authenticateAdmin = (req, res, next) => {
       return res.status(403).json({ error: 'Access denied' });
     }
     req.admin = decoded;
+    console.log('✅ Admin verified:', decoded);
     next();
   } catch (err) {
+    console.log('❌ Invalid token:', err.message);
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
@@ -153,7 +161,7 @@ app.post('/api/admin-login', async (req, res) => {
     // Set cookie
     res.cookie('admin_token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       maxAge: 3600000,
       sameSite: 'lax',
       path: '/'
@@ -178,11 +186,11 @@ app.post('/api/admin/login', async (req, res) => {
     );
 
     res.cookie('admin_token', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      maxAge: 3600000,
-      path: '/'
+     httpOnly: true,
+      secure: true,           
+      sameSite: 'lax',       
+      maxAge: 3600000,  
+      path: '/'   
     });
 
     return res.json({ success: true });
