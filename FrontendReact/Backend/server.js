@@ -46,7 +46,14 @@ const corsOptions = {
 };
 
 app.use(cors({
-  origin: "https://parkingsystem-iuq9.onrender.com",
+  origin: (origin, callback) => {
+    const allowedOrigin = "https://parkingsystem-iuq9.onrender.com";
+    if (!origin || origin === allowedOrigin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
