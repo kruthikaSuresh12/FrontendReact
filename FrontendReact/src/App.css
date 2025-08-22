@@ -5,11 +5,6 @@
   --primary: #3b82f6;
   --secondary: #10b981;
   --accent: #f59e0b;
-  --text: #ffffff;
-  --bg: #0f172a;
-  --card-bg: #1e293b;
-  --border-radius: 0.75rem;
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -20,24 +15,15 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  color: var(--text);
-  background-color: var(--bg);
-  line-height: 1.6;
+  color: white;
   overflow-x: hidden;
+  background-color: #0f172a;
 }
 
-/* Container for centering content */
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
-  width: 100%;
-}
-
-/* Keyframes - Optimized */
+/* Keyframes */
 @keyframes float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(3deg); }
+  50% { transform: translateY(-200px) rotate(5deg); }
 }
 
 @keyframes spin {
@@ -47,21 +33,21 @@ body {
 
 @keyframes pulse-slow {
   0%, 100% { transform: scale(1); opacity: 0.3; }
-  50% { transform: scale(1.05); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.5; }
 }
 
 @keyframes pulse-slower {
   0%, 100% { transform: scale(1); opacity: 0.2; }
-  50% { transform: scale(1.1); opacity: 0.4; }
+  50% { transform: scale(1.2); opacity: 0.4; }
 }
 
 @keyframes slideDown {
-  from { transform: translateY(-20px); opacity: 0; }
+  from { transform: translateY(-50px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
+  from { transform: translateY(50px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
@@ -71,24 +57,24 @@ body {
 }
 
 @keyframes fadeInPop {
-  0% { transform: scale(0.8); opacity: 0; }
-  50% { transform: scale(1.05); }
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.1); }
   100% { transform: scale(1); opacity: 1; }
 }
 
 @keyframes drive-slow {
   0% { transform: translateX(-100%) rotateY(180deg); }
-  100% { transform: translateX(calc(100vw + 100px)) rotateY(180deg); }
+  100% { transform: translateX(100vw) rotateY(180deg); }
 }
 
 @keyframes drive-fast {
   0% { transform: translateX(-100%) rotateY(180deg); }
-  100% { transform: translateX(calc(100vw + 100px)) rotateY(180deg); }
+  100% { transform: translateX(100vw) rotateY(180deg); }
 }
 
 @keyframes pan {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(50%); }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 @keyframes ping-slow {
@@ -109,24 +95,20 @@ body {
 /* Enhanced Floating Elements */
 .floating-element {
   will-change: transform, opacity;
-  animation: float 6s ease-in-out infinite;
 }
 
 /* Main CTA Button Effects */
 .spot-background {
   position: relative;
   display: inline-block;
-  padding: 1.5rem 2rem;
+  padding: 2rem;
   border-radius: 9999px;
-  background-color: var(--secondary);
-  transition: var(--transition);
-  cursor: pointer;
-  overflow: hidden;
+  transition: all 0.5s ease;
 }
 
 .spot-background:hover::before,
 .spot-background:hover::after {
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 .spot-background::before,
@@ -177,24 +159,44 @@ body {
   animation: pan 20s linear infinite;
 }
 
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  main h1 {
+    font-size: 2.5rem !important;
+    line-height: 1.2;
+  }
+
+  main p {
+    font-size: 1.1rem !important;
+  }
+
+  header, footer {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .spot-background {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  main h1 {
+    font-size: 2rem !important;
+  }
+
+  .spot-background button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+  }
+}
+
 /* Button Enhancements */
 button {
   position: relative;
   overflow: hidden;
-  transition: var(--transition);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform, box-shadow;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-}
-
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 button span:not(.absolute) {
@@ -210,93 +212,28 @@ button .absolute {
 .bg-clip-text {
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
 }
 
-.text-gradient {
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
-}
-
+/* Drop Shadows */
 .drop-shadow-glow {
   filter: drop-shadow(0 0 8px currentColor);
 }
 
-/* Center Wrapper - Responsive */
+.main{
+  margin-left: -25.5rem
+
+}
 .center-wrapper {
+  margin-left: 15.5rem;
   text-align: center;
-  padding: 2rem 1rem;
-  animation: fadeInUp 0.8s ease-out;
 }
 
-.center-wrapper h1 {
-  font-size: 2.8rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  animation: fadeInPop 0.6s ease-out;
-}
 
-.center-wrapper p {
-  font-size: 1.2rem;
-  color: #cbd5e1;
-  max-width: 600px;
-  margin: 0 auto 1.5rem;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-  .center-wrapper h1 {
-    font-size: 2.2rem;
-    line-height: 1.2;
-  }
-
-  .center-wrapper p {
-    font-size: 1.1rem;
-    padding: 0 1rem;
-  }
-
-  .spot-background {
-    padding: 1.25rem 1.75rem;
-    width: 100%;
-    max-width: 300px;
-  }
-
-  button {
-    width: 100%;
-    font-size: 1rem;
-  }
-
-  .animate-drive-slow,
-  .animate-drive-fast {
-    display: none; /* Hide cars on mobile if too heavy */
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 0.5rem;
-  }
-
-  .center-wrapper h1 {
-    font-size: 1.8rem;
-  }
-
-  .center-wrapper p {
-    font-size: 1rem;
-  }
-
-  .spot-background {
-    padding: 1rem 1.5rem;
-    max-width: 260px;
-  }
-}
-
-/* YourTicket.css - Responsive Ticket Cards */
-.loading, 
-.error {
+/* YourTicket.css */
+.loading, .error {
   text-align: center;
   padding: 2rem;
-  font-size: 1.1rem;
-  color: #cbd5e1;
+  font-size: 1.2rem;
 }
 
 .error {
@@ -304,42 +241,27 @@ button .absolute {
 }
 
 .ticket-card {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  transition: var(--transition);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .ticket-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Dropdown */
 .dropdown {
   position: relative;
   display: inline-block;
-  width: 100%;
-  margin-top: 1rem;
 }
 
 .dropbtn {
   background-color: #4a5568;
   color: white;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
   font-size: 1rem;
   border: none;
-  border-radius: var(--border-radius);
-  width: 100%;
-  text-align: center;
+  border-radius: 0.25rem;
   cursor: pointer;
-  transition: var(--transition);
-}
-
-.dropbtn:hover {
-  background-color: #2d3748;
 }
 
 .dropdown-content {
@@ -347,24 +269,23 @@ button .absolute {
   position: absolute;
   right: 0;
   background-color: #2d3748;
-  min-width: 100%;
+  min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 10;
-  border-radius: var(--border-radius);
+  z-index: 1;
+  border-radius: 0.25rem;
   overflow: hidden;
-  margin-top: 0.25rem;
 }
 
 .dropdown-content button {
   color: white;
   padding: 0.75rem 1rem;
+  text-decoration: none;
+  display: block;
   width: 100%;
   text-align: left;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.95rem;
-  transition: background 0.2s;
 }
 
 .dropdown-content button:hover {
@@ -373,19 +294,4 @@ button .absolute {
 
 .dropdown:hover .dropdown-content {
   display: block;
-}
-
-/* Optional: Reduce motion for users who prefer it */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  .floating-element,
-  .spot-background::before,
-  .spot-background::after,
-  .animate-drive-slow,
-  .animate-drive-fast,
-  .animate-pan {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition: none !important;
-  }
 }
