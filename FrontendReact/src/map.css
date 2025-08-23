@@ -4,18 +4,18 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #121212;
   color: #ffffff;
- 
 }
 
-/* Main container */
+/* Main container - responsive with equal side margins on desktop */
 .map-container {
-  padding: 1rem;
   height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  margin-right: 0.3rem;
-  margin-left: -30.3rem;
+  padding: 0.5rem;
+  max-width: 1400px;
+  margin: 0 auto; /* This ensures equal left/right margins on desktop */
+  width: 100%;
 }
 
 /* Header styles */
@@ -25,54 +25,71 @@ body {
   align-items: center;
   margin-bottom: 1rem;
   position: relative;
+  padding: 0.5rem 1rem;
+  background-color: #1a1a1a;
+  border-radius: 8px;
 }
 
 .app-title {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 600;
   color: #61dafb;
   text-align: center;
+  flex-grow: 1;
 }
 
-/* User menu */
-.user-menu-container {
+/* Dropdown Menu Button */
+.dropdown {
   position: relative;
+  display: inline-block;
 }
 
-.user-menu-button {
-  background: #2c2c2c;
-  border: 1px solid #444;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+.dropbtn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
   cursor: pointer;
-  font-size: 1.2rem;
+  color: white;
+  padding: 0.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 }
 
-.user-menu-dropdown {
+.dropdown-content {
+  display: none;
   position: absolute;
   right: 0;
   top: 100%;
-  background: #2c2c2c;
-  border: 1px solid #444;
-  border-radius: 4px;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 0.5rem;
+  overflow: hidden;
   z-index: 100;
-  display: flex;
-  flex-direction: column;
-  min-width: 150px;
+  min-width: 160px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.user-menu-dropdown button {
-  background: none;
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.menu-button {
+  padding: 0.75rem 1rem;
   border: none;
+  background: #1f2937;
   color: white;
-  padding: 0.5rem 1rem;
-  text-align: left;
   cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: 1rem;
 }
 
-.user-menu-dropdown button:hover {
-  background: #3c3c3c;
+.menu-button:hover {
+  background: #374151;
 }
 
 /* Search input */
@@ -85,6 +102,12 @@ body {
   background-color: #1e1e1e;
   color: white;
   font-size: 1rem;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #61dafb;
+  box-shadow: 0 0 0 2px rgba(97, 218, 251, 0.3);
 }
 
 /* Map content layout */
@@ -92,29 +115,38 @@ body {
   display: flex;
   flex: 1;
   gap: 1rem;
-  height: calc(100% - 100px);
+  flex-direction: column;
 }
 
+/* Map wrapper */
 .map-wrapper {
   flex: 2;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid #444;
+  height: 300px;
+  min-height: 250px;
 }
 
+/* Sidebar */
 .map-sidebar {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  background-color: #1e1e1e;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  max-height: 400px;
+  overflow: auto;
 }
 
-/* Section titles */
 .section-title {
   font-size: 1.2rem;
   font-weight: 500;
   margin: 0.5rem 0;
   color: #61dafb;
+  text-align: center;
 }
 
 /* Directions info */
@@ -140,12 +172,13 @@ body {
   cursor: pointer;
   font-weight: 600;
   transition: background-color 0.2s;
+  font-size: 1rem;
+  width: 100%;
 }
 
 .track-button {
   background-color: #61dafb;
   color: #121212;
-  margin-top: 0.5rem;
 }
 
 .track-button:hover {
@@ -164,6 +197,8 @@ body {
 .book-button {
   background-color: #0d6efd;
   color: white;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
 }
 
 .book-button:hover {
@@ -186,62 +221,66 @@ body {
   justify-content: space-between;
   align-items: center;
   border: 1px solid #444;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .spot-name {
   font-weight: 500;
   flex: 1;
+  min-width: 150px;
 }
 
-/* Scrollbar styling */
+/* Scrollbar */
 .spots-list::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .spots-list::-webkit-scrollbar-track {
   background: #2c2c2c;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .spots-list::-webkit-scrollbar-thumb {
   background: #61dafb;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .spots-list::-webkit-scrollbar-thumb:hover {
   background: #4fa8d3;
 }
 
-/* Loading and error messages */
-.loading-message, .error-message {
+/* Loading and error */
+.loading-message,
+.error-message {
   padding: 1rem;
   text-align: center;
   background: #2c2c2c;
   border-radius: 8px;
   margin: 0.5rem 0;
+  font-size: 0.95rem;
 }
 
 .error-message {
   color: #ff6b6b;
 }
 
-/* Tickets Page Styles */
+/* Tickets Page */
 .tickets-container {
-  padding: 2rem;
-  max-width: 1200px;
+  padding: 1.5rem;
+  max-width: 100%;
   margin: 0 auto;
 }
 
 .tickets-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1rem;
-  margin-top: 1rem;
 }
 
 .ticket-card {
   background-color: #2c2c2c;
-  padding: 1.5rem;
+  padding: 1.2rem;
   border-radius: 8px;
   border: 1px solid #444;
 }
@@ -249,89 +288,96 @@ body {
 .ticket-card h3 {
   color: #61dafb;
   margin-top: 0;
+  font-size: 1.3rem;
 }
 
 .ticket-card p {
   margin: 0.5rem 0;
-}
-.dropbtn {
-  background-color: #0d6efd;
-  color: white;
-  padding: 10px 16px;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
+  font-size: 0.95rem;
+  color: #ddd;
 }
 
-.dropdown {
-  position: relative;
-  display: inline-block;
+/* ===========================================
+   RESPONSIVE LAYOUTS
+   =========================================== */
+
+/* Mobile: everything stacks, full width */
+@media (max-width: 767px) {
+  .map-container {
+    padding: 0.5rem;
+  }
+
+  .app-header {
+    padding: 0.5rem;
+  }
+
+  .app-title {
+    font-size: 1.3rem;
+  }
+
+  .map-content-container {
+    flex-direction: column;
+  }
+
+  .map-wrapper {
+    height: 300px;
+  }
+
+  .map-sidebar {
+    max-height: 400px;
+  }
+
+  .spot-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .book-button {
+    align-self: stretch;
+  }
 }
 
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #1c1c1c;
-  min-width: 140px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
-  border-radius: 6px;
-  z-index: 1;
-  flex-direction: column;
+/* Desktop: side-by-side layout, equal margins */
+@media (min-width: 768px) {
+  .map-container {
+    padding: 1rem;
+    max-width: 1400px; /* Adjust as needed */
+  }
+
+  .map-content-container {
+    flex-direction: row;
+  }
+
+  .map-wrapper {
+    flex: 2;
+    height: calc(100vh - 200px);
+  }
+
+  .map-sidebar {
+    flex: 1;
+    max-height: calc(100vh - 200px);
+    width: 320px;
+  }
+
+  .spot-item {
+    flex-wrap: nowrap;
+  }
 }
 
-.dropdown-content button {
-  color: white;
-  padding: 12px 16px;
-  text-align: left;
-  background: none;
-  border: none;
-  width: 100%;
-  cursor: pointer;
-}
+/* Large Desktop */
+@media (min-width: 1024px) {
+  .map-container {
+    padding: 1.5rem;
+  }
 
-.dropdown-content button:hover {
-  background-color: #2a2a2a;
-}
+  .dropbtn {
+    font-size: 1.75rem;
+    width: 48px;
+    height: 48px;
+  }
 
-.dropdown:hover .dropdown-content {
-  display: flex;
-}
-
-.dropbtn {
-  font-size: 24px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: white;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  right: 1rem;
-  top: 3.5rem;
-  background: #1f2937;
-  border: 1px solid #374151;
-  border-radius: 0.5rem;
-  overflow: hidden;
-  z-index: 100;
-}
-
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
-.menu-button {
-  padding: 0.75rem 1rem;
-  border: none;
-  background: #1f2937;
-  color: white;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-}
-
-.menu-button:hover {
-  background: #374151;
+  .map-sidebar {
+    width: 360px;
+  }
 }
